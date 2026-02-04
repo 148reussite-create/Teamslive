@@ -271,18 +271,18 @@
                     <button class="btn-small" onclick="copyLink(1)">Copy Link</button>
                 </div>
 
-                <!-- Participant 2 (with videos) -->
+                <!-- Client (without videos - normal join flow) -->
                 <div class="participant-row" style="margin-top: 20px;">
                     <div class="input-group">
                         <label for="firstname2">First Name</label>
-                        <input type="text" id="firstname2" placeholder="e.g., Bob">
+                        <input type="text" id="firstname2" placeholder="e.g., Client">
                     </div>
                     <div class="input-group">
                         <label for="lastname2">Last Name</label>
-                        <input type="text" id="lastname2" placeholder="e.g., Johnson">
+                        <input type="text" id="lastname2" placeholder="e.g., Entreprise">
                     </div>
                 </div>
-                <button class="btn-small" onclick="generateLink(2, true)">Generate Link for Participant 2 (with videos)</button>
+                <button class="btn-small" onclick="generateLink(2, false)">Generate Link for Client (lobby only)</button>
                 <div class="generated-link" id="link2">
                     <div class="link-text" id="linktext2"></div>
                     <button class="btn-small" onclick="copyLink(2)">Copy Link</button>
