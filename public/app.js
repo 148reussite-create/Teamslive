@@ -50,6 +50,8 @@ let p2Video2URL = null;
 let p2Video1Element = null;
 let p2Video2Element = null;
 let p2VideoMode = 'stop'; // video1, video2, stop
+let p2Name = '';
+let p2Initials = 'P2';
 
 // Participant with videos control
 let isParticipantWithVideos = false;
@@ -2291,10 +2293,6 @@ const virtualPeers = new Map();
 
 // For participants: virtualId -> { stream: MediaStream }
 const virtualStreams = new Map();
-
-// Participant 2 virtual participant info
-let p2Name = '';
-let p2Initials = 'P2';
 
 // Initialize virtual participants for host
 function initVirtualParticipants() {
