@@ -41,6 +41,26 @@ app.get('/', (req, res) => {
   res.redirect('/participant');
 });
 
+// Reset endpoint - for testing on hosted platforms
+app.get('/reset', (req, res) => {
+  console.log('=== MANUAL RESET TRIGGERED ===');
+
+  // Disconnect all sockets
+  io.sockets.sockets.forEach((socket) => {
+    socket.disconnect(true);
+  });
+
+  // Clear all state
+  participants.clear();
+  waitingParticipants.clear();
+  virtualParticipants.clear();
+  chatHistory.length = 0;
+  hostId = null;
+
+  console.log('All state cleared');
+  res.send('Server state reset successfully. You can now reconnect.');
+});
+
 // Store participants
 const participants = new Map();
 const waitingParticipants = new Map();
@@ -361,16 +381,31 @@ io.on('connection', (socket) => {
       participants.delete(socket.id);
       waitingParticipants.delete(socket.id);
 
-      // If host disconnects, assign new host
-      if (socket.id === hostId && participants.size > 0) {
-        const newHostId = Array.from(participants.keys())[0];
-        hostId = newHostId;
-        const newHost = participants.get(newHostId);
-        if (newHost) {
-          newHost.isHost = true;
-          io.to(newHostId).emit('you-are-host');
-          console.log('New host:', newHost.name);
+      // If host disconnects
+      if (socket.id === hostId) {
+        if (participants.size > 0) {
+          // Assign new host from remaining participants
+          const newHostId = Array.from(participants.keys())[0];
+          hostId = newHostId;
+          const newHost = participants.get(newHostId);
+          if (newHost) {
+            newHost.isHost = true;
+            io.to(newHostId).emit('you-are-host');
+            console.log('New host:', newHost.name);
+          }
+        } else {
+          // No participants left, reset hostId
+          hostId = null;
+          console.log('All participants left, hostId reset to null');
         }
+      }
+
+      // If no participants left at all, clear everything
+      if (participants.size === 0 && waitingParticipants.size === 0) {
+        hostId = null;
+        virtualParticipants.clear();
+        chatHistory.length = 0;
+        console.log('Room empty - all state reset');
       }
 
       // Notify others
