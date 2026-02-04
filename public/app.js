@@ -72,7 +72,6 @@ const mainContainer = document.getElementById('main-container');
 // Setup screen elements
 const setupVideo = document.getElementById('setup-video');
 const setupVideoOff = document.getElementById('setup-video-off');
-const setupCameraIcon = document.getElementById('setup-camera-icon');
 const setupCameraToggle = document.getElementById('setup-camera-toggle');
 const joinNowBtn = document.getElementById('join-now-btn');
 
@@ -136,9 +135,8 @@ function init() {
     setupSocketEvents();
 
     // Event listeners
-    setupCameraIcon.addEventListener('click', toggleSetupCamera);
-    setupCameraToggle.addEventListener('change', toggleSetupCamera);
-    joinNowBtn.addEventListener('click', joinWaitingRoom);
+    if (setupCameraToggle) setupCameraToggle.addEventListener('click', toggleSetupCamera);
+    if (joinNowBtn) joinNowBtn.addEventListener('click', joinWaitingRoom);
 
     if (admitBtn) admitBtn.addEventListener('click', admitParticipant);
     if (denyBtn) denyBtn.addEventListener('click', denyParticipant);
@@ -294,23 +292,18 @@ async function toggleSetupCamera() {
 
 
 function updateSetupCameraButton() {
-    // Update camera icon
-    const img = setupCameraIcon.querySelector('img');
-    if (img) {
-        if (isCameraOn) {
-            // Camera ON - use black camera icon
-            img.src = 'video-black.svg';
-            img.alt = 'Camera on';
-        } else {
-            // Camera OFF - use white camera off icon
-            img.src = 'camera-video-off-svgrepo-com.svg';
-            img.alt = 'Camera off';
-        }
-    }
-
-    // Update toggle switch state
+    // Update camera toggle button icon
     if (setupCameraToggle) {
-        setupCameraToggle.checked = isCameraOn;
+        const icon = setupCameraToggle.querySelector('i');
+        if (icon) {
+            if (isCameraOn) {
+                icon.className = 'fas fa-video';
+                setupCameraToggle.classList.add('active');
+            } else {
+                icon.className = 'fas fa-video-slash';
+                setupCameraToggle.classList.remove('active');
+            }
+        }
     }
 }
 
