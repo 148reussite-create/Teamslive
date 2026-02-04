@@ -47,6 +47,9 @@ const waitingParticipants = new Map();
 let hostId = null;
 const chatHistory = [];
 
+// Virtual participants (P2, P3) - controlled by host
+const virtualParticipants = new Map();
+
 io.on('connection', (socket) => {
   console.log('New connection:', socket.id);
 
@@ -241,6 +244,94 @@ io.on('connection', (socket) => {
     console.log('Slot 2 update from host:', data);
     // Broadcast to all other participants
     socket.broadcast.emit('slot2-update', data);
+  });
+
+  // Virtual participant registration (P2, P3) - from host
+  socket.on('register-virtual-participant', (data) => {
+    if (socket.id !== hostId) {
+      console.log('Non-host tried to register virtual participant, ignoring');
+      return;
+    }
+
+    console.log('Registering virtual participant:', data);
+    virtualParticipants.set(data.virtualId, {
+      virtualId: data.virtualId,
+      name: data.name,
+      initials: data.initials,
+      hostSocketId: socket.id
+    });
+
+    // Notify all participants about the new virtual participant
+    socket.broadcast.emit('virtual-participant-joined', {
+      virtualId: data.virtualId,
+      name: data.name,
+      initials: data.initials
+    });
+  });
+
+  // Virtual participant removed
+  socket.on('remove-virtual-participant', (data) => {
+    if (socket.id !== hostId) return;
+
+    console.log('Removing virtual participant:', data.virtualId);
+    virtualParticipants.delete(data.virtualId);
+
+    // Notify all participants
+    socket.broadcast.emit('virtual-participant-left', {
+      virtualId: data.virtualId
+    });
+  });
+
+  // WebRTC signaling for virtual participants (host -> participants)
+  socket.on('virtual-offer', (data) => {
+    // Host sends offer on behalf of virtual participant
+    if (socket.id !== hostId) return;
+
+    console.log(`Virtual offer from ${data.virtualId} to ${data.to}`);
+    io.to(data.to).emit('virtual-offer', {
+      offer: data.offer,
+      virtualId: data.virtualId,
+      from: socket.id
+    });
+  });
+
+  socket.on('virtual-answer', (data) => {
+    // Participant sends answer for virtual participant's offer
+    console.log(`Virtual answer for ${data.virtualId} from ${socket.id}`);
+    if (hostId) {
+      io.to(hostId).emit('virtual-answer', {
+        answer: data.answer,
+        virtualId: data.virtualId,
+        from: socket.id
+      });
+    }
+  });
+
+  socket.on('virtual-ice-candidate', (data) => {
+    // ICE candidate for virtual peer connection
+    if (data.toHost && hostId) {
+      // From participant to host (for virtual peer)
+      io.to(hostId).emit('virtual-ice-candidate', {
+        candidate: data.candidate,
+        virtualId: data.virtualId,
+        from: socket.id
+      });
+    } else if (data.to) {
+      // From host to participant (for virtual peer)
+      io.to(data.to).emit('virtual-ice-candidate', {
+        candidate: data.candidate,
+        virtualId: data.virtualId,
+        from: socket.id
+      });
+    }
+  });
+
+  // Virtual participant video update (from host to all participants)
+  socket.on('virtual-video-update', (data) => {
+    if (socket.id !== hostId) return;
+
+    console.log('Virtual video update:', data);
+    socket.broadcast.emit('virtual-video-update', data);
   });
 
   // Disconnect

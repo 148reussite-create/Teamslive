@@ -289,18 +289,18 @@
                 </div>
             </div>
 
-            <!-- Videos Section -->
+            <!-- Videos Section - Host -->
             <div class="section">
-                <h3>Your Videos (for host webcam replacement)</h3>
-                <p style="font-size: 13px; color: #605e5c; margin-bottom: 20px;">Upload up to 2 videos that you can play during the meeting instead of your webcam</p>
+                <h3>Vos Vidéos (Host) - remplacent votre webcam</h3>
+                <p style="font-size: 13px; color: #605e5c; margin-bottom: 20px;">Ces vidéos apparaîtront à la place de votre webcam quand vous cliquez Video 1 ou Video 2</p>
 
                 <!-- Video 1 -->
                 <div>
-                    <label style="font-size: 14px; font-weight: 600; color: #252423; display: block; margin-bottom: 10px;">Video 1</label>
+                    <label style="font-size: 14px; font-weight: 600; color: #252423; display: block; margin-bottom: 10px;">Host - Video 1</label>
                     <div class="video-upload-box" id="upload-box-1" onclick="document.getElementById('video-input-1').click()">
                         <i class="fas fa-cloud-upload-alt"></i>
-                        <p><strong>Click to upload</strong> or drag and drop</p>
-                        <p style="font-size: 12px; margin-top: 5px;">MP4, WebM, or OGG (max 500MB)</p>
+                        <p><strong>Cliquez pour uploader</strong></p>
+                        <p style="font-size: 12px; margin-top: 5px;">MP4, WebM, ou OGG (max 500MB)</p>
                         <input type="file" id="video-input-1" accept="video/mp4,video/webm,video/ogg">
                     </div>
                     <div class="video-preview" id="preview-1">
@@ -314,11 +314,11 @@
 
                 <!-- Video 2 -->
                 <div style="margin-top: 20px;">
-                    <label style="font-size: 14px; font-weight: 600; color: #252423; display: block; margin-bottom: 10px;">Video 2 (Optional)</label>
+                    <label style="font-size: 14px; font-weight: 600; color: #252423; display: block; margin-bottom: 10px;">Host - Video 2 (Optionnel)</label>
                     <div class="video-upload-box" id="upload-box-2" onclick="document.getElementById('video-input-2').click()">
                         <i class="fas fa-cloud-upload-alt"></i>
-                        <p><strong>Click to upload</strong> or drag and drop</p>
-                        <p style="font-size: 12px; margin-top: 5px;">MP4, WebM, or OGG (max 500MB)</p>
+                        <p><strong>Cliquez pour uploader</strong></p>
+                        <p style="font-size: 12px; margin-top: 5px;">MP4, WebM, ou OGG (max 500MB)</p>
                         <input type="file" id="video-input-2" accept="video/mp4,video/webm,video/ogg">
                     </div>
                     <div class="video-preview" id="preview-2">
@@ -326,6 +326,101 @@
                         <div class="video-info">
                             <span id="video-name-2">video.mp4</span>
                             <button class="remove-btn" onclick="removeVideo(2)">Remove</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Videos Section - Participant 2 -->
+            <div class="section">
+                <h3>Vidéos Participant 2</h3>
+                <p style="font-size: 13px; color: #605e5c; margin-bottom: 20px;">Ces vidéos seront disponibles pour le Participant 2 (celui avec le lien "with videos")</p>
+
+                <!-- P2 Video 1 -->
+                <div>
+                    <label style="font-size: 14px; font-weight: 600; color: #252423; display: block; margin-bottom: 10px;">Participant 2 - Video 1</label>
+                    <div class="video-upload-box" id="upload-box-p2-1" onclick="document.getElementById('video-input-p2-1').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Cliquez pour uploader</strong></p>
+                        <p style="font-size: 12px; margin-top: 5px;">MP4, WebM, ou OGG (max 500MB)</p>
+                        <input type="file" id="video-input-p2-1" accept="video/mp4,video/webm,video/ogg">
+                    </div>
+                    <div class="video-preview" id="preview-p2-1">
+                        <video id="video-player-p2-1" controls></video>
+                        <div class="video-info">
+                            <span id="video-name-p2-1">video.mp4</span>
+                            <button class="remove-btn" onclick="removeVideoP2(1)">Remove</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- P2 Video 2 -->
+                <div style="margin-top: 20px;">
+                    <label style="font-size: 14px; font-weight: 600; color: #252423; display: block; margin-bottom: 10px;">Participant 2 - Video 2 (Optionnel)</label>
+                    <div class="video-upload-box" id="upload-box-p2-2" onclick="document.getElementById('video-input-p2-2').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Cliquez pour uploader</strong></p>
+                        <p style="font-size: 12px; margin-top: 5px;">MP4, WebM, ou OGG (max 500MB)</p>
+                        <input type="file" id="video-input-p2-2" accept="video/mp4,video/webm,video/ogg">
+                    </div>
+                    <div class="video-preview" id="preview-p2-2">
+                        <video id="video-player-p2-2" controls></video>
+                        <div class="video-info">
+                            <span id="video-name-p2-2">video.mp4</span>
+                            <button class="remove-btn" onclick="removeVideoP2(2)">Remove</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Videos Section - Participant 3 (Virtual) -->
+            <div class="section">
+                <h3>Vidéos Participant 3 (Virtuel)</h3>
+                <p style="font-size: 13px; color: #605e5c; margin-bottom: 20px;">Ces vidéos seront jouées pour le participant virtuel (Slot 2 > Participant 3)</p>
+
+                <div class="participant-row">
+                    <div class="input-group">
+                        <label for="p3-firstname">Prénom du Participant 3</label>
+                        <input type="text" id="p3-firstname" placeholder="ex: Michel">
+                    </div>
+                    <div class="input-group">
+                        <label for="p3-lastname">Nom du Participant 3</label>
+                        <input type="text" id="p3-lastname" placeholder="ex: Dupont">
+                    </div>
+                </div>
+
+                <!-- P3 Video 1 -->
+                <div>
+                    <label style="font-size: 14px; font-weight: 600; color: #252423; display: block; margin-bottom: 10px;">Participant 3 - Video 1</label>
+                    <div class="video-upload-box" id="upload-box-p3-1" onclick="document.getElementById('video-input-p3-1').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Cliquez pour uploader</strong></p>
+                        <p style="font-size: 12px; margin-top: 5px;">MP4, WebM, ou OGG (max 500MB)</p>
+                        <input type="file" id="video-input-p3-1" accept="video/mp4,video/webm,video/ogg">
+                    </div>
+                    <div class="video-preview" id="preview-p3-1">
+                        <video id="video-player-p3-1" controls></video>
+                        <div class="video-info">
+                            <span id="video-name-p3-1">video.mp4</span>
+                            <button class="remove-btn" onclick="removeVideoP3(1)">Remove</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- P3 Video 2 -->
+                <div style="margin-top: 20px;">
+                    <label style="font-size: 14px; font-weight: 600; color: #252423; display: block; margin-bottom: 10px;">Participant 3 - Video 2 (Optionnel)</label>
+                    <div class="video-upload-box" id="upload-box-p3-2" onclick="document.getElementById('video-input-p3-2').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Cliquez pour uploader</strong></p>
+                        <p style="font-size: 12px; margin-top: 5px;">MP4, WebM, ou OGG (max 500MB)</p>
+                        <input type="file" id="video-input-p3-2" accept="video/mp4,video/webm,video/ogg">
+                    </div>
+                    <div class="video-preview" id="preview-p3-2">
+                        <video id="video-player-p3-2" controls></video>
+                        <div class="video-info">
+                            <span id="video-name-p3-2">video.mp4</span>
+                            <button class="remove-btn" onclick="removeVideoP3(2)">Remove</button>
                         </div>
                     </div>
                 </div>
@@ -349,6 +444,68 @@
     <script>
         const baseUrl = window.location.origin;
         let uploadedVideos = { 1: null, 2: null };
+        let uploadedVideosP2 = { 1: null, 2: null };
+        let uploadedVideosP3 = { 1: null, 2: null };
+
+        // Handle P2 video uploads
+        document.getElementById('video-input-p2-1').addEventListener('change', (e) => handleVideoUploadP2(e, 1));
+        document.getElementById('video-input-p2-2').addEventListener('change', (e) => handleVideoUploadP2(e, 2));
+
+        function handleVideoUploadP2(event, slot) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 500 * 1024 * 1024) {
+                alert('Fichier trop gros. Maximum 500MB.');
+                return;
+            }
+
+            uploadedVideosP2[slot] = file;
+
+            const videoURL = URL.createObjectURL(file);
+            document.getElementById(`video-player-p2-${slot}`).src = videoURL;
+            document.getElementById(`video-name-p2-${slot}`).textContent = file.name;
+            document.getElementById(`upload-box-p2-${slot}`).style.display = 'none';
+            document.getElementById(`preview-p2-${slot}`).classList.add('show');
+        }
+
+        function removeVideoP2(slot) {
+            uploadedVideosP2[slot] = null;
+            document.getElementById(`video-player-p2-${slot}`).src = '';
+            document.getElementById(`upload-box-p2-${slot}`).style.display = 'block';
+            document.getElementById(`preview-p2-${slot}`).classList.remove('show');
+            document.getElementById(`video-input-p2-${slot}`).value = '';
+        }
+
+        // Handle P3 video uploads
+        document.getElementById('video-input-p3-1').addEventListener('change', (e) => handleVideoUploadP3(e, 1));
+        document.getElementById('video-input-p3-2').addEventListener('change', (e) => handleVideoUploadP3(e, 2));
+
+        function handleVideoUploadP3(event, slot) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 500 * 1024 * 1024) {
+                alert('Fichier trop gros. Maximum 500MB.');
+                return;
+            }
+
+            uploadedVideosP3[slot] = file;
+
+            const videoURL = URL.createObjectURL(file);
+            document.getElementById(`video-player-p3-${slot}`).src = videoURL;
+            document.getElementById(`video-name-p3-${slot}`).textContent = file.name;
+            document.getElementById(`upload-box-p3-${slot}`).style.display = 'none';
+            document.getElementById(`preview-p3-${slot}`).classList.add('show');
+        }
+
+        function removeVideoP3(slot) {
+            uploadedVideosP3[slot] = null;
+            document.getElementById(`video-player-p3-${slot}`).src = '';
+            document.getElementById(`upload-box-p3-${slot}`).style.display = 'block';
+            document.getElementById(`preview-p3-${slot}`).classList.remove('show');
+            document.getElementById(`video-input-p3-${slot}`).value = '';
+        }
 
         // Generate participant link
         function generateLink(participantNum, hasVideos = false) {
@@ -419,39 +576,6 @@
             document.getElementById(`video-input-${slot}`).value = '';
         }
 
-        async function startAsHost() {
-            console.log('startAsHost called');
-
-            try {
-                // Get host name
-                const hostFirstname = document.getElementById('host-firstname').value.trim();
-                const hostLastname = document.getElementById('host-lastname').value.trim();
-
-                if (!hostFirstname || !hostLastname) {
-                    alert('Please enter your first and last name');
-                    return;
-                }
-
-                const hostFullName = `${hostFirstname} ${hostLastname}`;
-
-                // Store host info
-                sessionStorage.setItem('isHost', 'true');
-                sessionStorage.setItem('userName', hostFullName);
-
-                // Store videos in IndexedDB instead of sessionStorage
-                if (uploadedVideos[1] || uploadedVideos[2]) {
-                    await storeVideosInIndexedDB();
-                }
-
-                console.log('Redirecting to meeting...');
-                // Redirect to meeting
-                window.location.href = '/meeting';
-            } catch (error) {
-                console.error('Error in startAsHost:', error);
-                alert('Error starting meeting: ' + error.message);
-            }
-        }
-
         function testQuickStart() {
             // Quick test function - sets host with default name
             sessionStorage.setItem('isHost', 'true');
@@ -462,7 +586,7 @@
 
         async function storeVideosInIndexedDB() {
             return new Promise((resolve, reject) => {
-                const request = indexedDB.open('TeamsCloneDB', 1);
+                const request = indexedDB.open('TeamsCloneDB', 2);
 
                 request.onerror = () => reject(request.error);
 
@@ -474,18 +598,38 @@
                     // Clear old videos first
                     store.clear();
 
-                    // Store video 1
+                    // Store Host videos (ID 1, 2)
                     if (uploadedVideos[1]) {
-                        store.put({ id: 1, file: uploadedVideos[1] });
+                        store.put({ id: 1, file: uploadedVideos[1], type: 'host' });
+                        console.log('Storing Host Video 1');
+                    }
+                    if (uploadedVideos[2]) {
+                        store.put({ id: 2, file: uploadedVideos[2], type: 'host' });
+                        console.log('Storing Host Video 2');
                     }
 
-                    // Store video 2
-                    if (uploadedVideos[2]) {
-                        store.put({ id: 2, file: uploadedVideos[2] });
+                    // Store Participant 2 videos (ID 3, 4)
+                    if (uploadedVideosP2[1]) {
+                        store.put({ id: 3, file: uploadedVideosP2[1], type: 'participant2' });
+                        console.log('Storing P2 Video 1');
+                    }
+                    if (uploadedVideosP2[2]) {
+                        store.put({ id: 4, file: uploadedVideosP2[2], type: 'participant2' });
+                        console.log('Storing P2 Video 2');
+                    }
+
+                    // Store Participant 3 videos (ID 5, 6)
+                    if (uploadedVideosP3[1]) {
+                        store.put({ id: 5, file: uploadedVideosP3[1], type: 'participant3' });
+                        console.log('Storing P3 Video 1');
+                    }
+                    if (uploadedVideosP3[2]) {
+                        store.put({ id: 6, file: uploadedVideosP3[2], type: 'participant3' });
+                        console.log('Storing P3 Video 2');
                     }
 
                     transaction.oncomplete = () => {
-                        console.log('Videos stored in IndexedDB');
+                        console.log('All videos stored in IndexedDB');
                         resolve();
                     };
 
@@ -499,6 +643,54 @@
                     }
                 };
             });
+        }
+
+        async function startAsHost() {
+            console.log('startAsHost called');
+
+            try {
+                // Get host name
+                const hostFirstname = document.getElementById('host-firstname').value.trim();
+                const hostLastname = document.getElementById('host-lastname').value.trim();
+
+                if (!hostFirstname || !hostLastname) {
+                    alert('Veuillez entrer votre prénom et nom');
+                    return;
+                }
+
+                const hostFullName = `${hostFirstname} ${hostLastname}`;
+
+                // Get P3 name
+                const p3Firstname = document.getElementById('p3-firstname').value.trim();
+                const p3Lastname = document.getElementById('p3-lastname').value.trim();
+                const p3FullName = p3Firstname && p3Lastname ? `${p3Firstname} ${p3Lastname}` : '';
+
+                // Store host info
+                sessionStorage.setItem('isHost', 'true');
+                sessionStorage.setItem('userName', hostFullName);
+
+                // Store P3 info
+                if (p3FullName) {
+                    sessionStorage.setItem('participant3Name', p3FullName);
+                }
+
+                // Store P2 name (from Participant 1 field - the one with videos)
+                const p2Firstname = document.getElementById('firstname1').value.trim();
+                const p2Lastname = document.getElementById('lastname1').value.trim();
+                const p2FullName = p2Firstname && p2Lastname ? `${p2Firstname} ${p2Lastname}` : '';
+                if (p2FullName) {
+                    sessionStorage.setItem('participant2Name', p2FullName);
+                }
+
+                // Store videos in IndexedDB
+                await storeVideosInIndexedDB();
+
+                console.log('Redirecting to meeting...');
+                window.location.href = '/meeting';
+            } catch (error) {
+                console.error('Error in startAsHost:', error);
+                alert('Erreur: ' + error.message);
+            }
         }
     </script>
 </body>

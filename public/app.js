@@ -44,6 +44,13 @@ let p3Video2URL = null;
 let p3Video1Element = null;
 let p3Video2Element = null;
 
+// Participant 2 video elements (uploaded by host for P2)
+let p2Video1URL = null;
+let p2Video2URL = null;
+let p2Video1Element = null;
+let p2Video2Element = null;
+let p2VideoMode = 'stop'; // video1, video2, stop
+
 // Participant with videos control
 let isParticipantWithVideos = false;
 let participantVideoMode = 'webcam';
@@ -116,6 +123,15 @@ function init() {
         userName = sessionStorage.getItem('userName') || 'Host';
         userInitials = getInitials(userName);
 
+        // Load P2 and P3 names from sessionStorage
+        p2Name = sessionStorage.getItem('participant2Name') || 'Participant 2';
+        p2Initials = getInitials(p2Name);
+        participant3Name = sessionStorage.getItem('participant3Name') || '';
+        participant3Initials = participant3Name ? getInitials(participant3Name) : 'P3';
+
+        console.log('Loaded P2 name:', p2Name);
+        console.log('Loaded P3 name:', participant3Name);
+
         // Load host videos from IndexedDB
         loadVideosFromIndexedDB('host');
     } else if (sessionStorage.getItem('isParticipantWithVideos') === 'true') {
@@ -133,6 +149,9 @@ function init() {
 
     // Socket events
     setupSocketEvents();
+
+    // Virtual participant socket events
+    initVirtualParticipantListeners();
 
     // Event listeners
     if (setupCameraToggle) setupCameraToggle.addEventListener('click', toggleSetupCamera);
@@ -451,6 +470,17 @@ function enterMeeting() {
         // Wait a bit for server to register, then send entered-meeting
         setTimeout(() => {
             socket.emit('entered-meeting');
+
+            // Initialize virtual participants (P2, P3) after entering meeting
+            setTimeout(() => {
+                initVirtualParticipants();
+                addP2ControlSection();
+
+                // Add P2 to video grid if videos are available
+                if (p2Video1Element || p2Video2Element) {
+                    addVirtualParticipantDisplay('virtual-p2', p2Name || 'Participant 2', p2Initials || 'P2', p2VideoMode);
+                }
+            }, 500);
         }, 100);
     } else {
         // Participants just send entered-meeting immediately
@@ -1004,6 +1034,9 @@ function setupSocketEvents() {
             if (isHost) {
                 setTimeout(() => {
                     broadcastSlot2State();
+
+                    // Create virtual peer connections for the new participant
+                    createVirtualPeersForNewParticipant(data.id);
                 }, 500); // Small delay to ensure connection is ready
             }
         }
@@ -1254,6 +1287,80 @@ function loadVideosFromIndexedDB(userType) {
                     console.log('Host Video 2 element created');
                 } else {
                     console.log('No host video 2 found in IndexedDB');
+                }
+            };
+
+            // Load Participant 2 videos (IDs 3 and 4) - uploaded by host
+            const getP2Video1 = store.get(3);
+            getP2Video1.onsuccess = () => {
+                if (getP2Video1.result && getP2Video1.result.file) {
+                    p2Video1URL = URL.createObjectURL(getP2Video1.result.file);
+                    console.log('P2 Video 1 loaded from IndexedDB, URL:', p2Video1URL);
+
+                    p2Video1Element = document.createElement('video');
+                    p2Video1Element.src = p2Video1URL;
+                    p2Video1Element.loop = true;
+                    p2Video1Element.muted = true;
+                    p2Video1Element.playsInline = true;
+                    p2Video1Element.preload = 'auto';
+                    console.log('P2 Video 1 element created');
+                } else {
+                    console.log('No P2 video 1 found in IndexedDB (ID 3)');
+                }
+            };
+
+            const getP2Video2 = store.get(4);
+            getP2Video2.onsuccess = () => {
+                if (getP2Video2.result && getP2Video2.result.file) {
+                    p2Video2URL = URL.createObjectURL(getP2Video2.result.file);
+                    console.log('P2 Video 2 loaded from IndexedDB, URL:', p2Video2URL);
+
+                    p2Video2Element = document.createElement('video');
+                    p2Video2Element.src = p2Video2URL;
+                    p2Video2Element.loop = true;
+                    p2Video2Element.muted = true;
+                    p2Video2Element.playsInline = true;
+                    p2Video2Element.preload = 'auto';
+                    console.log('P2 Video 2 element created');
+                } else {
+                    console.log('No P2 video 2 found in IndexedDB (ID 4)');
+                }
+            };
+
+            // Load Participant 3 videos (IDs 5 and 6) - uploaded by host
+            const getP3Video1 = store.get(5);
+            getP3Video1.onsuccess = () => {
+                if (getP3Video1.result && getP3Video1.result.file) {
+                    p3Video1URL = URL.createObjectURL(getP3Video1.result.file);
+                    console.log('P3 Video 1 loaded from IndexedDB, URL:', p3Video1URL);
+
+                    p3Video1Element = document.createElement('video');
+                    p3Video1Element.src = p3Video1URL;
+                    p3Video1Element.loop = true;
+                    p3Video1Element.muted = true;
+                    p3Video1Element.playsInline = true;
+                    p3Video1Element.preload = 'auto';
+                    console.log('P3 Video 1 element created');
+                } else {
+                    console.log('No P3 video 1 found in IndexedDB (ID 5)');
+                }
+            };
+
+            const getP3Video2 = store.get(6);
+            getP3Video2.onsuccess = () => {
+                if (getP3Video2.result && getP3Video2.result.file) {
+                    p3Video2URL = URL.createObjectURL(getP3Video2.result.file);
+                    console.log('P3 Video 2 loaded from IndexedDB, URL:', p3Video2URL);
+
+                    p3Video2Element = document.createElement('video');
+                    p3Video2Element.src = p3Video2URL;
+                    p3Video2Element.loop = true;
+                    p3Video2Element.muted = true;
+                    p3Video2Element.playsInline = true;
+                    p3Video2Element.preload = 'auto';
+                    console.log('P3 Video 2 element created');
+                } else {
+                    console.log('No P3 video 2 found in IndexedDB (ID 6)');
                 }
             };
         } else if (userType === 'participant') {
@@ -2174,3 +2281,504 @@ window.addEventListener('beforeunload', () => {
         clearInterval(timerInterval);
     }
 });
+
+// ============================================
+// VIRTUAL PARTICIPANTS (P2, P3) - WEBRTC STREAMING
+// ============================================
+
+// Virtual peers storage: virtualId -> { peerConnections: Map<participantId, RTCPeerConnection>, stream: MediaStream }
+const virtualPeers = new Map();
+
+// For participants: virtualId -> { stream: MediaStream }
+const virtualStreams = new Map();
+
+// Participant 2 virtual participant info
+let p2Name = '';
+let p2Initials = 'P2';
+
+// Initialize virtual participants for host
+function initVirtualParticipants() {
+    if (!isHost) return;
+
+    console.log('Initializing virtual participants...');
+
+    // Get P2 and P3 names from session storage (set by host-setup)
+    p2Name = sessionStorage.getItem('participant2Name') || 'Participant 2';
+    p2Initials = getInitials(p2Name);
+
+    // P3 info is already loaded from session storage in init()
+    // participant3Name, participant3Initials
+
+    // Check if P2 videos are available
+    if (p2Video1Element || p2Video2Element) {
+        console.log('P2 videos found, registering virtual P2');
+        registerVirtualParticipant('virtual-p2', p2Name, p2Initials);
+    }
+
+    // P3 is handled by the slot2 system, but we can also stream it
+    if ((p3Video1Element || p3Video2Element) && slot2Mode === 'participant3') {
+        console.log('P3 videos found, will stream via slot2 system');
+    }
+}
+
+// Register a virtual participant with the server
+function registerVirtualParticipant(virtualId, name, initials) {
+    console.log(`Registering virtual participant: ${virtualId} (${name})`);
+
+    socket.emit('register-virtual-participant', {
+        virtualId: virtualId,
+        name: name,
+        initials: initials
+    });
+
+    // Initialize storage for this virtual participant
+    virtualPeers.set(virtualId, {
+        peerConnections: new Map(),
+        currentStream: null,
+        name: name,
+        initials: initials
+    });
+}
+
+// Create peer connection for virtual participant to a real participant
+async function createVirtualPeerConnection(virtualId, participantId) {
+    if (!isHost) return null;
+
+    console.log(`Creating virtual peer ${virtualId} -> ${participantId}`);
+
+    const virtualPeer = virtualPeers.get(virtualId);
+    if (!virtualPeer) {
+        console.error(`Virtual peer ${virtualId} not found`);
+        return null;
+    }
+
+    const peer = new RTCPeerConnection(ICE_SERVERS);
+    virtualPeer.peerConnections.set(participantId, peer);
+
+    // Get the appropriate video stream
+    let videoStream = await getVirtualParticipantStream(virtualId);
+
+    if (videoStream) {
+        const tracks = videoStream.getTracks();
+        console.log(`Adding ${tracks.length} tracks from virtual ${virtualId} to peer ${participantId}`);
+        tracks.forEach(track => {
+            peer.addTrack(track, videoStream);
+        });
+    }
+
+    // Handle ICE candidates
+    peer.onicecandidate = (event) => {
+        if (event.candidate) {
+            socket.emit('virtual-ice-candidate', {
+                virtualId: virtualId,
+                to: participantId,
+                candidate: event.candidate
+            });
+        }
+    };
+
+    // Monitor connection state
+    peer.onconnectionstatechange = () => {
+        if (peer.connectionState === 'connected' || peer.connectionState === 'failed') {
+            console.log(`Virtual ${virtualId} -> ${participantId} connection: ${peer.connectionState}`);
+        }
+    };
+
+    // Create and send offer
+    const offer = await peer.createOffer();
+    await peer.setLocalDescription(offer);
+
+    socket.emit('virtual-offer', {
+        virtualId: virtualId,
+        to: participantId,
+        offer: offer
+    });
+
+    return peer;
+}
+
+// Get stream for a virtual participant
+async function getVirtualParticipantStream(virtualId) {
+    let videoElement = null;
+    let mode = 'stop';
+
+    if (virtualId === 'virtual-p2') {
+        if (p2VideoMode === 'video1' && p2Video1Element) {
+            videoElement = p2Video1Element;
+            mode = 'video1';
+        } else if (p2VideoMode === 'video2' && p2Video2Element) {
+            videoElement = p2Video2Element;
+            mode = 'video2';
+        }
+    } else if (virtualId === 'virtual-p3') {
+        if (participant3VideoMode === 'video1' && p3Video1Element) {
+            videoElement = p3Video1Element;
+            mode = 'video1';
+        } else if (participant3VideoMode === 'video2' && p3Video2Element) {
+            videoElement = p3Video2Element;
+            mode = 'video2';
+        }
+    }
+
+    if (videoElement && mode !== 'stop') {
+        try {
+            // Wait for video to be ready
+            if (videoElement.readyState < 2) {
+                await new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => reject(new Error('Video load timeout')), 10000);
+                    videoElement.onloadeddata = () => {
+                        clearTimeout(timeout);
+                        resolve();
+                    };
+                    videoElement.onerror = () => {
+                        clearTimeout(timeout);
+                        reject(new Error('Video load error'));
+                    };
+                    videoElement.load();
+                });
+            }
+
+            await videoElement.play();
+            const stream = videoElement.captureStream ? videoElement.captureStream() : videoElement.mozCaptureStream();
+            console.log(`Got stream for ${virtualId}: ${stream.getTracks().length} tracks`);
+            return stream;
+        } catch (error) {
+            console.error(`Error getting stream for ${virtualId}:`, error);
+        }
+    }
+
+    // Return black canvas stream for stop mode
+    const canvas = document.createElement('canvas');
+    canvas.width = 640;
+    canvas.height = 480;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    return canvas.captureStream(1);
+}
+
+// Update virtual participant video stream
+async function updateVirtualParticipantStream(virtualId) {
+    if (!isHost) return;
+
+    const virtualPeer = virtualPeers.get(virtualId);
+    if (!virtualPeer) return;
+
+    console.log(`Updating stream for ${virtualId}`);
+
+    const newStream = await getVirtualParticipantStream(virtualId);
+
+    // Replace track in all peer connections
+    for (const [participantId, peer] of virtualPeer.peerConnections.entries()) {
+        const senders = peer.getSenders();
+        const videoSender = senders.find(sender => sender.track && sender.track.kind === 'video');
+
+        if (videoSender && newStream) {
+            const newVideoTrack = newStream.getVideoTracks()[0];
+            if (newVideoTrack) {
+                try {
+                    await videoSender.replaceTrack(newVideoTrack);
+                    console.log(`Replaced track for ${virtualId} -> ${participantId}`);
+                } catch (error) {
+                    console.error(`Error replacing track for ${virtualId}:`, error);
+                }
+            }
+        }
+    }
+
+    // Notify participants about video state change
+    socket.emit('virtual-video-update', {
+        virtualId: virtualId,
+        videoMode: virtualId === 'virtual-p2' ? p2VideoMode : participant3VideoMode
+    });
+}
+
+// Switch P2 video mode
+async function switchP2Video(mode) {
+    if (!isHost) return;
+
+    console.log('Switching P2 video to:', mode);
+    p2VideoMode = mode;
+
+    // Update button states
+    const buttons = document.querySelectorAll('#p2-video-controls .video-control-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.getElementById(`btn-p2-${mode}`);
+    if (activeBtn) activeBtn.classList.add('active');
+
+    // Update the stream for all connected participants
+    await updateVirtualParticipantStream('virtual-p2');
+
+    // Refresh P2 display locally
+    refreshP2Display();
+}
+
+// Refresh P2 display (local view for host)
+function refreshP2Display() {
+    const existingP2 = document.getElementById('video-virtual-p2');
+    if (existingP2) {
+        existingP2.remove();
+    }
+
+    // Only show P2 if videos are available
+    if (!p2Video1Element && !p2Video2Element) return;
+
+    addVirtualParticipantDisplay('virtual-p2', p2Name, p2Initials, p2VideoMode);
+}
+
+// Add virtual participant display to video grid
+function addVirtualParticipantDisplay(virtualId, name, initials, videoMode) {
+    // Remove existing if present
+    const existing = document.getElementById(`video-${virtualId}`);
+    if (existing) existing.remove();
+
+    const videoContainer = document.createElement('div');
+    videoContainer.className = 'video-container';
+    videoContainer.id = `video-${virtualId}`;
+
+    if (videoMode === 'stop') {
+        // Show avatar
+        const avatar = document.createElement('div');
+        avatar.className = 'video-avatar';
+        avatar.innerHTML = `<div class="video-avatar-circle">${initials}</div>`;
+        videoContainer.appendChild(avatar);
+    } else {
+        // Show video
+        let videoElement = null;
+        if (virtualId === 'virtual-p2') {
+            videoElement = videoMode === 'video1' ? p2Video1Element : p2Video2Element;
+        } else if (virtualId === 'virtual-p3') {
+            videoElement = videoMode === 'video1' ? p3Video1Element : p3Video2Element;
+        }
+
+        if (videoElement && isHost) {
+            // Host has the video locally
+            const videoClone = videoElement.cloneNode(true);
+            videoClone.style.width = '100%';
+            videoClone.style.height = '100%';
+            videoClone.style.objectFit = 'cover';
+            videoContainer.appendChild(videoClone);
+            videoClone.play().catch(e => console.error(`Error playing ${virtualId} video:`, e));
+        } else if (virtualStreams.has(virtualId)) {
+            // Participant receiving stream
+            const video = document.createElement('video');
+            video.srcObject = virtualStreams.get(virtualId);
+            video.autoplay = true;
+            video.playsInline = true;
+            videoContainer.appendChild(video);
+        } else {
+            // No video available, show indicator
+            const indicator = document.createElement('div');
+            indicator.className = 'video-avatar';
+            indicator.innerHTML = `
+                <div class="video-avatar-circle" style="position: relative;">
+                    ${initials}
+                    <div style="position: absolute; bottom: -5px; right: -5px; width: 20px; height: 20px; background: #107c10; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+                    </div>
+                </div>
+            `;
+            videoContainer.appendChild(indicator);
+        }
+    }
+
+    const nameTag = createNameTag(name, false, false, false);
+    videoContainer.appendChild(nameTag);
+
+    videoGrid.appendChild(videoContainer);
+}
+
+// Setup socket events for virtual participants
+function setupVirtualParticipantSocketEvents() {
+    // For participants: receive virtual participant joined
+    socket.on('virtual-participant-joined', (data) => {
+        console.log('Virtual participant joined:', data);
+
+        if (!isHost) {
+            // Add display for virtual participant
+            addVirtualParticipantDisplay(data.virtualId, data.name, data.initials, 'stop');
+        }
+    });
+
+    // For participants: receive virtual participant left
+    socket.on('virtual-participant-left', (data) => {
+        console.log('Virtual participant left:', data.virtualId);
+        const container = document.getElementById(`video-${data.virtualId}`);
+        if (container) container.remove();
+        virtualStreams.delete(data.virtualId);
+    });
+
+    // For participants: receive virtual offer
+    socket.on('virtual-offer', async (data) => {
+        if (isHost) return; // Host doesn't receive these
+
+        console.log(`Received virtual offer for ${data.virtualId}`);
+
+        const peer = new RTCPeerConnection(ICE_SERVERS);
+
+        // Store the peer connection
+        if (!virtualStreams.has(data.virtualId)) {
+            virtualStreams.set(data.virtualId + '-peer', peer);
+        }
+
+        // Handle incoming stream
+        peer.ontrack = (event) => {
+            console.log(`Received track from ${data.virtualId}:`, event.track.kind);
+            const [stream] = event.streams;
+            virtualStreams.set(data.virtualId, stream);
+
+            // Update display
+            const container = document.getElementById(`video-${data.virtualId}`);
+            if (container) {
+                // Clear and update with video
+                const nameTag = container.querySelector('.video-name-tag');
+                container.innerHTML = '';
+
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                video.autoplay = true;
+                video.playsInline = true;
+                container.appendChild(video);
+
+                if (nameTag) container.appendChild(nameTag);
+            }
+        };
+
+        // Handle ICE candidates
+        peer.onicecandidate = (event) => {
+            if (event.candidate) {
+                socket.emit('virtual-ice-candidate', {
+                    virtualId: data.virtualId,
+                    toHost: true,
+                    candidate: event.candidate
+                });
+            }
+        };
+
+        // Set remote description and create answer
+        await peer.setRemoteDescription(new RTCSessionDescription(data.offer));
+        const answer = await peer.createAnswer();
+        await peer.setLocalDescription(answer);
+
+        socket.emit('virtual-answer', {
+            virtualId: data.virtualId,
+            answer: answer
+        });
+    });
+
+    // For host: receive virtual answer
+    socket.on('virtual-answer', async (data) => {
+        if (!isHost) return;
+
+        console.log(`Received virtual answer for ${data.virtualId} from ${data.from}`);
+
+        const virtualPeer = virtualPeers.get(data.virtualId);
+        if (virtualPeer) {
+            const peer = virtualPeer.peerConnections.get(data.from);
+            if (peer) {
+                await peer.setRemoteDescription(new RTCSessionDescription(data.answer));
+                console.log(`Virtual peer ${data.virtualId} -> ${data.from} connected`);
+            }
+        }
+    });
+
+    // Handle ICE candidates for virtual peers
+    socket.on('virtual-ice-candidate', async (data) => {
+        if (isHost) {
+            // Host receives ICE from participant
+            const virtualPeer = virtualPeers.get(data.virtualId);
+            if (virtualPeer) {
+                const peer = virtualPeer.peerConnections.get(data.from);
+                if (peer && data.candidate) {
+                    await peer.addIceCandidate(new RTCIceCandidate(data.candidate));
+                }
+            }
+        } else {
+            // Participant receives ICE from host
+            const peer = virtualStreams.get(data.virtualId + '-peer');
+            if (peer && data.candidate) {
+                await peer.addIceCandidate(new RTCIceCandidate(data.candidate));
+            }
+        }
+    });
+
+    // For participants: receive virtual video update
+    socket.on('virtual-video-update', (data) => {
+        if (isHost) return;
+
+        console.log('Virtual video update:', data);
+
+        // Update display based on video mode
+        const container = document.getElementById(`video-${data.virtualId}`);
+        if (container) {
+            if (data.videoMode === 'stop') {
+                // Show avatar
+                const nameTag = container.querySelector('.video-name-tag');
+                const name = nameTag ? nameTag.querySelector('span').textContent : 'P';
+                const initials = getInitials(name);
+
+                container.innerHTML = '';
+                const avatar = document.createElement('div');
+                avatar.className = 'video-avatar';
+                avatar.innerHTML = `<div class="video-avatar-circle">${initials}</div>`;
+                container.appendChild(avatar);
+                if (nameTag) container.appendChild(nameTag);
+            }
+            // Video mode will be handled by incoming stream
+        }
+    });
+}
+
+// Call this in init() or when entering meeting
+function initVirtualParticipantListeners() {
+    setupVirtualParticipantSocketEvents();
+}
+
+// When a new participant joins, create virtual peer connections for them
+function createVirtualPeersForNewParticipant(participantId) {
+    if (!isHost) return;
+
+    // Create connections for each registered virtual participant
+    for (const [virtualId, virtualPeer] of virtualPeers.entries()) {
+        console.log(`Creating virtual peer ${virtualId} for new participant ${participantId}`);
+        createVirtualPeerConnection(virtualId, participantId);
+    }
+}
+
+// Add P2 control section to the host video control panel
+function addP2ControlSection() {
+    const videoControlPanel = document.getElementById('host-video-control');
+    if (!videoControlPanel || !isHost) return;
+
+    // Check if P2 controls already exist
+    if (document.getElementById('p2-video-controls')) return;
+
+    // Check if P2 videos are available
+    if (!p2Video1URL && !p2Video2URL) return;
+
+    const controlContent = document.getElementById('control-panel-content');
+    if (!controlContent) return;
+
+    // Create P2 control section
+    const p2Section = document.createElement('div');
+    p2Section.className = 'video-control-section';
+    p2Section.innerHTML = `
+        <h5 style="margin-bottom: 8px; font-size: 12px; color: #c7c7c7;">Participant 2 Video Control</h5>
+        <div class="video-control-buttons" id="p2-video-controls">
+            <button class="video-control-btn active" id="btn-p2-stop" onclick="switchP2Video('stop')">
+                <i class="fas fa-stop"></i>
+                <span>Stop</span>
+            </button>
+            <button class="video-control-btn" id="btn-p2-video1" onclick="switchP2Video('video1')">
+                <i class="fas fa-video"></i>
+                <span>Video 1</span>
+            </button>
+            <button class="video-control-btn" id="btn-p2-video2" onclick="switchP2Video('video2')">
+                <i class="fas fa-video"></i>
+                <span>Video 2</span>
+            </button>
+        </div>
+    `;
+
+    controlContent.appendChild(p2Section);
+}
