@@ -968,8 +968,6 @@ function setupSocketEvents() {
         console.log('isHost:', isHost);
         console.log('currentScreen:', currentScreen);
         console.log('participant name:', data.name);
-        console.log('meetingAdmissionNotification element:', meetingAdmissionNotification);
-        console.log('meetingGuestName element:', meetingGuestName);
 
         if (isHost) {
             if (currentScreen === 'waiting') {
@@ -982,15 +980,22 @@ function setupSocketEvents() {
                 // Host in main meeting (new flow)
                 console.log('Showing notification in meeting');
 
-                if (meetingGuestName && meetingAdmissionNotification) {
-                    meetingGuestName.textContent = data.name;
-                    meetingAdmissionNotification.style.display = 'block';
-                    console.log('Notification should be visible now!');
-                    console.log('Notification display style:', meetingAdmissionNotification.style.display);
+                // Find elements dynamically (in case they weren't found at load time)
+                const notifEl = document.getElementById('meeting-admission-notification');
+                const nameEl = document.getElementById('meeting-guest-name');
+
+                if (nameEl && notifEl) {
+                    nameEl.textContent = data.name;
+                    notifEl.style.display = 'block';
+                    console.log('Notification displayed for:', data.name);
                 } else {
                     console.error('ERROR: Notification elements not found!');
-                    console.error('meetingGuestName:', meetingGuestName);
-                    console.error('meetingAdmissionNotification:', meetingAdmissionNotification);
+                    // Fallback: show browser confirm dialog
+                    if (confirm(`${data.name} veut rejoindre. Admettre?`)) {
+                        socket.emit('admit-participant');
+                    } else {
+                        socket.emit('deny-participant');
+                    }
                 }
             }
         } else {
