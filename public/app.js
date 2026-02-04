@@ -57,6 +57,8 @@ let p2Initials = 'P2';
 let isParticipantWithVideos = false;
 let participantVideoMode = 'webcam';
 let participantRole = null; // 'fred' for Fred slot replacement
+let myFredMode = 'fred'; // 'fred' or 'participant' - for Fred slot participant's display mode
+let myParticipantDisplayName = ''; // Custom name when in participant mode
 let participantVideo1URL = null;
 let participantVideo2URL = null;
 let participantVideo1Element = null;
@@ -457,6 +459,16 @@ function enterMeeting() {
             prepareHostVideoElements();
         } else if (isParticipantWithVideos) {
             prepareParticipantVideoElements();
+
+            // Show Fred participant control panel if this is a Fred slot participant
+            if (participantRole === 'fred') {
+                // Hide the generic control panel for Fred slot participants
+                const videoControlPanel = document.getElementById('host-video-control');
+                if (videoControlPanel) videoControlPanel.style.display = 'none';
+
+                // Show the Fred-specific control panel
+                showFredParticipantControlPanel();
+            }
         }
     }
 
@@ -1117,6 +1129,35 @@ function setupSocketEvents() {
 
         // Refresh Slot 2 display based on new state
         refreshSlot2Display();
+    });
+
+    // Fred slot participant mode change (from real Fred slot participant)
+    socket.on('fred-slot-mode-change', (data) => {
+        console.log('Received fred-slot-mode-change:', data);
+
+        // Update the Fred slot display for this participant
+        const videoContainer = document.getElementById('video-sarah');
+        if (videoContainer) {
+            // Update name tag
+            const nameTag = videoContainer.querySelector('.video-name-tag');
+            if (nameTag) {
+                const nameSpan = nameTag.querySelector('span');
+                if (nameSpan) {
+                    nameSpan.textContent = data.displayName;
+                }
+            }
+        }
+
+        // Handle Fred message based on mode
+        if (data.mode === 'fred') {
+            // Add Fred message if not present
+            if (!sarahMessageAdded) {
+                addSarahInitialMessage();
+            }
+        } else {
+            // Remove Fred message when switching to participant mode
+            removeFredMessage();
+        }
     });
 
     // WebRTC signaling
@@ -2907,4 +2948,120 @@ function addP2ControlSection() {
     `;
 
     controlContent.appendChild(p2Section);
+}
+
+// ============================================
+// FRED SLOT PARTICIPANT CONTROL FUNCTIONS
+// ============================================
+
+// Show/hide Fred slot participant control panel
+function showFredParticipantControlPanel() {
+    const panel = document.getElementById('fred-participant-control');
+    if (panel && participantRole === 'fred') {
+        panel.style.display = 'block';
+        // Pre-fill the name input with the participant's name
+        const nameInput = document.getElementById('my-participant-name');
+        if (nameInput && userName) {
+            nameInput.value = userName;
+            myParticipantDisplayName = userName;
+        }
+        console.log('Fred slot participant control panel shown');
+    }
+}
+
+// Toggle Fred participant control panel (minimize/maximize)
+function toggleFredParticipantPanel() {
+    const content = document.getElementById('fred-participant-panel-content');
+    const btn = document.getElementById('btn-minimize-fred-panel');
+
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        btn.textContent = '−';
+        btn.title = 'Réduire';
+    } else {
+        content.style.display = 'none';
+        btn.textContent = '+';
+        btn.title = 'Agrandir';
+    }
+}
+
+// Switch between Fred mode and Participant mode
+function switchMyFredMode(mode) {
+    if (participantRole !== 'fred') return;
+
+    console.log('Switching my Fred mode to:', mode);
+    myFredMode = mode;
+
+    // Update mode buttons
+    const btnFred = document.getElementById('btn-my-mode-fred');
+    const btnParticipant = document.getElementById('btn-my-mode-participant');
+
+    if (btnFred) btnFred.classList.toggle('active', mode === 'fred');
+    if (btnParticipant) btnParticipant.classList.toggle('active', mode === 'participant');
+
+    // Show/hide name input
+    const nameInput = document.getElementById('my-participant-name-input');
+    if (nameInput) nameInput.style.display = mode === 'participant' ? 'block' : 'none';
+
+    // Broadcast mode change to all participants
+    socket.emit('fred-slot-mode-change', {
+        mode: mode,
+        displayName: mode === 'fred' ? 'Fred' : (myParticipantDisplayName || userName),
+        initials: mode === 'fred' ? 'F' : getInitials(myParticipantDisplayName || userName)
+    });
+
+    // Update local display
+    updateMyFredSlotDisplay();
+}
+
+// Update participant name when typing
+function updateMyParticipantName() {
+    const input = document.getElementById('my-participant-name');
+    if (input) {
+        myParticipantDisplayName = input.value.trim() || userName;
+        console.log('Updated my display name:', myParticipantDisplayName);
+
+        // Broadcast if in participant mode
+        if (myFredMode === 'participant') {
+            socket.emit('fred-slot-mode-change', {
+                mode: 'participant',
+                displayName: myParticipantDisplayName,
+                initials: getInitials(myParticipantDisplayName)
+            });
+        }
+    }
+}
+
+// Update local Fred slot display based on mode
+function updateMyFredSlotDisplay() {
+    const videoContainer = document.getElementById('video-sarah');
+    if (!videoContainer) return;
+
+    // Update name tag
+    const nameTag = videoContainer.querySelector('.video-name-tag');
+    if (nameTag) {
+        const nameSpan = nameTag.querySelector('span');
+        if (nameSpan) {
+            nameSpan.textContent = myFredMode === 'fred' ? 'Fred' : (myParticipantDisplayName || userName);
+        }
+    }
+
+    // Handle Fred message
+    if (myFredMode === 'fred') {
+        // Add Fred message if not present
+        if (!sarahMessageAdded) {
+            addSarahInitialMessage();
+        }
+    } else {
+        // Remove Fred message
+        removeFredMessage();
+    }
+}
+
+// Switch video source for Fred slot participant
+function switchMyVideo(mode) {
+    if (participantRole !== 'fred') return;
+
+    // Reuse the existing switchHostVideo logic but for participant
+    switchHostVideo(mode);
 }

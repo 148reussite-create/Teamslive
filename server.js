@@ -237,6 +237,19 @@ io.on('connection', (socket) => {
     });
   });
 
+  // Fred slot participant mode change (from real Fred slot participant)
+  socket.on('fred-slot-mode-change', (data) => {
+    const participant = participants.get(socket.id);
+    if (!participant || participant.role !== 'fred') {
+      console.log('Non-Fred slot participant tried to send fred-slot-mode-change, ignoring');
+      return;
+    }
+
+    console.log('Fred slot mode change from:', participant.name, 'mode:', data.mode);
+    // Broadcast to all other participants
+    socket.broadcast.emit('fred-slot-mode-change', data);
+  });
+
   // Slot 2 state update (from host to all participants)
   socket.on('slot2-update', (data) => {
     // Only allow host to send slot2 updates

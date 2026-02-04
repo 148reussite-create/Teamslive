@@ -325,6 +325,57 @@
                 </div><!-- End control-panel-content -->
             </div>
 
+            <!-- Fred Slot Participant Control Panel (only visible to participant with role=fred) -->
+            <div id="fred-participant-control" class="host-video-control" style="display: none; left: 20px;">
+                <div class="video-control-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h4 style="margin: 0;">Mon Affichage</h4>
+                    <button id="btn-minimize-fred-panel" onclick="toggleFredParticipantPanel()" title="Réduire" style="background: #d2d0ce; color: #252423; border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-size: 16px; font-weight: bold;">
+                        −
+                    </button>
+                </div>
+
+                <div id="fred-participant-panel-content">
+                    <!-- Mode Toggle: Fred vs Participant -->
+                    <div class="mode-toggle" style="display: flex; gap: 8px; margin: 12px 0;">
+                        <button id="btn-my-mode-fred" class="video-control-btn active" onclick="switchMyFredMode('fred')" style="flex: 1;">
+                            <i class="fas fa-robot"></i>
+                            <span>Fred</span>
+                        </button>
+                        <button id="btn-my-mode-participant" class="video-control-btn" onclick="switchMyFredMode('participant')" style="flex: 1;">
+                            <i class="fas fa-user"></i>
+                            <span>Participant</span>
+                        </button>
+                    </div>
+
+                    <!-- Name Input (for Participant mode) -->
+                    <div id="my-participant-name-input" style="display: none; margin-bottom: 12px;">
+                        <input type="text" id="my-participant-name" placeholder="Mon nom (ex: Michel Dupont)"
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #d2d0ce; border-radius: 4px; font-size: 14px;"
+                               oninput="updateMyParticipantName()">
+                    </div>
+
+                    <!-- Video Controls -->
+                    <div class="video-control-buttons" style="margin-top: 10px;">
+                        <button id="btn-my-webcam" class="video-control-btn active" onclick="switchMyVideo('webcam')">
+                            <i class="fas fa-video"></i>
+                            <span>Webcam</span>
+                        </button>
+                        <button id="btn-my-video1" class="video-control-btn" onclick="switchMyVideo('video1')">
+                            <i class="fas fa-play-circle"></i>
+                            <span>Video 1</span>
+                        </button>
+                        <button id="btn-my-video2" class="video-control-btn" onclick="switchMyVideo('video2')">
+                            <i class="fas fa-play-circle"></i>
+                            <span>Video 2</span>
+                        </button>
+                        <button id="btn-my-stop" class="video-control-btn" onclick="switchMyVideo('stop')">
+                            <i class="fas fa-stop-circle"></i>
+                            <span>Stop</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Meeting Chat (always visible) -->
             <div id="meeting-chat-panel" class="meeting-chat-panel">
                 <div class="chat-header">
