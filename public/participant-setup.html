@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Participant Setup - Microsoft Teams Meeting</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .setup-screen {
+            width: 100vw;
+            min-height: 100vh;
+            background-color: #f3f2f1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            overflow-y: auto;
+        }
+
+        .setup-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+
+        .setup-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #252423;
+            margin-bottom: 10px;
+        }
+
+        .setup-subtitle {
+            font-size: 14px;
+            color: #605e5c;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #faf9f8;
+            border-radius: 8px;
+            border: 1px solid #edebe9;
+        }
+
+        .section h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #252423;
+            margin-bottom: 15px;
+        }
+
+        .video-upload-box {
+            border: 2px dashed #d2d0ce;
+            border-radius: 8px;
+            padding: 30px 20px;
+            text-align: center;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .video-upload-box:hover {
+            border-color: #6264a7;
+            background: #f3f2f1;
+        }
+
+        .video-upload-box i {
+            font-size: 36px;
+            color: #6264a7;
+            margin-bottom: 10px;
+        }
+
+        .video-upload-box p {
+            color: #605e5c;
+            font-size: 14px;
+        }
+
+        .video-upload-box input {
+            display: none;
+        }
+
+        .video-preview {
+            display: none;
+            margin-bottom: 15px;
+        }
+
+        .video-preview.show {
+            display: block;
+        }
+
+        .video-preview video {
+            width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            background: #000;
+        }
+
+        .video-info {
+            margin-top: 10px;
+            padding: 12px;
+            background: #f3f2f1;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .video-info span {
+            font-size: 14px;
+            color: #252423;
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #c4314b;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 8px;
+        }
+
+        .remove-btn:hover {
+            text-decoration: underline;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #edebe9;
+        }
+
+        .btn-primary {
+            background: #6264a7;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: #4b4d8c;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-screen">
+        <div class="setup-container">
+            <h1 class="setup-title">Participant Setup</h1>
+            <p class="setup-subtitle" id="participant-name-display">Upload your videos before joining</p>
+
+            <!-- Videos Section -->
+            <div class="section">
+                <h3>Your Videos (for webcam replacement)</h3>
+                <p style="font-size: 13px; color: #605e5c; margin-bottom: 20px;">Upload up to 2 videos that you can play during the meeting</p>
+
+                <!-- Video 1 -->
+                <div>
+                    <label style="font-size: 14px; font-weight: 600; color: #252423; display: block; margin-bottom: 10px;">Video 1</label>
+                    <div class="video-upload-box" id="upload-box-1" onclick="document.getElementById('video-input-1').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Click to upload</strong> or drag and drop</p>
+                        <p style="font-size: 12px; margin-top: 5px;">MP4, WebM, or OGG (max 500MB)</p>
+                        <input type="file" id="video-input-1" accept="video/mp4,video/webm,video/ogg">
+                    </div>
+                    <div class="video-preview" id="preview-1">
+                        <video id="video-player-1" controls></video>
+                        <div class="video-info">
+                            <span id="video-name-1">video.mp4</span>
+                            <button class="remove-btn" onclick="removeVideo(1)">Remove</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video 2 -->
+                <div style="margin-top: 20px;">
+                    <label style="font-size: 14px; font-weight: 600; color: #252423; display: block; margin-bottom: 10px;">Video 2 (Optional)</label>
+                    <div class="video-upload-box" id="upload-box-2" onclick="document.getElementById('video-input-2').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Click to upload</strong> or drag and drop</p>
+                        <p style="font-size: 12px; margin-top: 5px;">MP4, WebM, or OGG (max 500MB)</p>
+                        <input type="file" id="video-input-2" accept="video/mp4,video/webm,video/ogg">
+                    </div>
+                    <div class="video-preview" id="preview-2">
+                        <video id="video-player-2" controls></video>
+                        <div class="video-info">
+                            <span id="video-name-2">video.mp4</span>
+                            <button class="remove-btn" onclick="removeVideo(2)">Remove</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn-primary" id="join-btn" onclick="joinMeeting()">Join Meeting</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedVideos = { 1: null, 2: null };
+        let participantName = '';
+
+        // Get participant name from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        participantName = urlParams.get('name') || 'Participant';
+        document.getElementById('participant-name-display').textContent = `Welcome ${participantName}! Upload your videos before joining`;
+
+        // Handle video uploads
+        document.getElementById('video-input-1').addEventListener('change', (e) => handleVideoUpload(e, 1));
+        document.getElementById('video-input-2').addEventListener('change', (e) => handleVideoUpload(e, 2));
+
+        function handleVideoUpload(event, slot) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Check file size (500MB max)
+            if (file.size > 500 * 1024 * 1024) {
+                alert('File is too large. Maximum size is 500MB.');
+                return;
+            }
+
+            // Store video file
+            uploadedVideos[slot] = file;
+
+            // Show preview
+            const videoURL = URL.createObjectURL(file);
+            document.getElementById(`video-player-${slot}`).src = videoURL;
+            document.getElementById(`video-name-${slot}`).textContent = file.name;
+            document.getElementById(`upload-box-${slot}`).style.display = 'none';
+            document.getElementById(`preview-${slot}`).classList.add('show');
+        }
+
+        function removeVideo(slot) {
+            uploadedVideos[slot] = null;
+            document.getElementById(`video-player-${slot}`).src = '';
+            document.getElementById(`upload-box-${slot}`).style.display = 'block';
+            document.getElementById(`preview-${slot}`).classList.remove('show');
+            document.getElementById(`video-input-${slot}`).value = '';
+        }
+
+        async function joinMeeting() {
+            console.log('joinMeeting called');
+
+            try {
+                // Store participant info
+                sessionStorage.setItem('isParticipantWithVideos', 'true');
+                sessionStorage.setItem('userName', participantName);
+
+                // Store videos in IndexedDB
+                if (uploadedVideos[1] || uploadedVideos[2]) {
+                    await storeVideosInIndexedDB();
+                }
+
+                console.log('Redirecting to meeting...');
+                // Redirect to meeting
+                window.location.href = '/meeting';
+            } catch (error) {
+                console.error('Error joining meeting:', error);
+                alert('Error joining meeting: ' + error.message);
+            }
+        }
+
+        async function storeVideosInIndexedDB() {
+            return new Promise((resolve, reject) => {
+                // First, check if we need to upgrade the database
+                const checkRequest = indexedDB.open('TeamsCloneDB');
+
+                checkRequest.onsuccess = (event) => {
+                    const db = event.target.result;
+                    const currentVersion = db.version;
+                    const hasVideosStore = db.objectStoreNames.contains('videos');
+                    db.close();
+
+                    if (!hasVideosStore) {
+                        // Need to upgrade - open with higher version
+                        console.log('Videos store not found, upgrading database...');
+                        const upgradeRequest = indexedDB.open('TeamsCloneDB', currentVersion + 1);
+
+                        upgradeRequest.onupgradeneeded = (event) => {
+                            const db = event.target.result;
+                            if (!db.objectStoreNames.contains('videos')) {
+                                db.createObjectStore('videos', { keyPath: 'id' });
+                                console.log('Videos store created');
+                            }
+                        };
+
+                        upgradeRequest.onsuccess = (event) => {
+                            const db = event.target.result;
+                            storeVideos(db, resolve, reject);
+                        };
+
+                        upgradeRequest.onerror = () => reject(upgradeRequest.error);
+                    } else {
+                        // Store already exists, just open and use it
+                        const request = indexedDB.open('TeamsCloneDB');
+                        request.onsuccess = (event) => {
+                            const db = event.target.result;
+                            storeVideos(db, resolve, reject);
+                        };
+                        request.onerror = () => reject(request.error);
+                    }
+                };
+
+                checkRequest.onerror = () => {
+                    // Database doesn't exist, create it
+                    const createRequest = indexedDB.open('TeamsCloneDB', 1);
+
+                    createRequest.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+                        db.createObjectStore('videos', { keyPath: 'id' });
+                        console.log('Database and videos store created');
+                    };
+
+                    createRequest.onsuccess = (event) => {
+                        const db = event.target.result;
+                        storeVideos(db, resolve, reject);
+                    };
+
+                    createRequest.onerror = () => reject(createRequest.error);
+                };
+            });
+        }
+
+        function storeVideos(db, resolve, reject) {
+            try {
+                const transaction = db.transaction(['videos'], 'readwrite');
+                const store = transaction.objectStore('videos');
+
+                // Store participant videos with different IDs (3 and 4)
+                if (uploadedVideos[1]) {
+                    store.put({ id: 3, file: uploadedVideos[1] });
+                }
+
+                if (uploadedVideos[2]) {
+                    store.put({ id: 4, file: uploadedVideos[2] });
+                }
+
+                transaction.oncomplete = () => {
+                    console.log('Participant videos stored in IndexedDB');
+                    db.close();
+                    resolve();
+                };
+
+                transaction.onerror = () => {
+                    db.close();
+                    reject(transaction.error);
+                };
+            } catch (error) {
+                db.close();
+                reject(error);
+            }
+        }
+    </script>
+</body>
+</html>

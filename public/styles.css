@@ -1,0 +1,1615 @@
+/* Teams Clone - WHITE THEME (Exact reference) */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+    background-color: #f3f2f1;
+    color: #252423;
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* ========================================
+   STEP 1: SPLASH SCREEN (Teams Logo)
+   ======================================== */
+
+.splash-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    background-color: #f3f2f1;
+}
+
+.teams-logo {
+    width: 150px;
+    height: 150px;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* ========================================
+   STEP 2: AUDIO/VIDEO SETUP SCREEN
+   ======================================== */
+
+.setup-screen {
+    width: 100vw;
+    height: 100vh;
+    background-color: #f3f2f1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.setup-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    max-width: 900px;
+    width: 100%;
+    padding: 30px;
+}
+
+.setup-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.teams-icon {
+    width: 40px;
+    height: 40px;
+}
+
+.setup-username {
+    font-size: 14px;
+    color: #252423;
+}
+
+.setup-change-btn {
+    margin-left: auto;
+    background: none;
+    border: 1px solid #8a8886;
+    padding: 6px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #252423;
+}
+
+.setup-change-btn:hover {
+    background-color: #f3f2f1;
+}
+
+.setup-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #252423;
+    margin-bottom: 8px;
+}
+
+.setup-time {
+    font-size: 14px;
+    color: #605e5c;
+    margin-bottom: 30px;
+}
+
+.setup-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.setup-video-container {
+    position: relative;
+    background: #000;
+    border-radius: 8px;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+}
+
+.setup-video-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.setup-video-off {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #faf9f8;
+    color: #605e5c;
+}
+
+.setup-video-off i {
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: #605e5c;
+}
+
+.setup-video-off p {
+    font-size: 14px;
+    font-weight: 600;
+    color: #605e5c;
+}
+
+.setup-video-controls {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+}
+
+.setup-control-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.setup-control-btn:hover {
+    background: rgba(0,0,0,0.7);
+}
+
+.setup-audio-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.audio-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.audio-option input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.audio-option label {
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.audio-device {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f3f2f1;
+    border-radius: 4px;
+}
+
+.audio-device i {
+    color: #605e5c;
+}
+
+.audio-device select {
+    flex: 1;
+    border: none;
+    background: none;
+    font-size: 14px;
+    outline: none;
+}
+
+.audio-level {
+    width: 40px;
+    height: 4px;
+    background: #c8c6c4;
+    border-radius: 2px;
+}
+
+.setup-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 20px;
+    border-top: 1px solid #edebe9;
+}
+
+.setup-cancel-btn {
+    padding: 8px 20px;
+    border: 1px solid #8a8886;
+    background: white;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.setup-cancel-btn:hover {
+    background: #f3f2f1;
+}
+
+.setup-join-btn {
+    padding: 8px 20px;
+    background: #6264a7;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.setup-join-btn:hover {
+    background: #5558a0;
+}
+
+/* ========================================
+   NEW SETUP SCREEN LAYOUT (Teams-like)
+   ======================================== */
+
+.setup-container-new {
+    background: transparent;
+    max-width: 1080px;
+    width: 100%;
+    padding: 40px 50px;
+}
+
+.setup-header-centered {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.setup-title-centered {
+    font-size: 24px;
+    font-weight: 600;
+    color: #252423;
+    margin: 0 0 8px 0;
+    text-align: center;
+}
+
+.setup-time-centered {
+    font-size: 14px;
+    color: #605e5c;
+    margin: 0 0 32px 0;
+    text-align: center;
+}
+
+/* Waiting state message (after clicking Join now) */
+.setup-waiting-message {
+    font-size: 24px;
+    font-weight: 600;
+    color: #252423;
+    margin: 0 0 8px 0;
+    text-align: center;
+}
+
+.setup-waiting-subtitle {
+    font-size: 16px;
+    color: #605e5c;
+    font-weight: 600;
+    margin: 0 0 32px 0;
+    text-align: center;
+}
+
+/* Disabled Join now button */
+.setup-join-btn-new:disabled {
+    background: #edebe9;
+    cursor: not-allowed;
+    color: #c8c6c4;
+}
+
+.setup-join-btn-new:disabled:hover {
+    background: #edebe9;
+}
+
+.setup-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-bottom: 32px;
+}
+
+/* Vidéo section (gauche) */
+.setup-video-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.setup-video-preview {
+    background: #faf9f8;
+    border-radius: 0;
+    aspect-ratio: 16/9;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #d2d0ce;
+    border-bottom: none;
+}
+
+.setup-video-preview video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.setup-video-controls-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 10px;
+    background: #ffffff;
+    border: 1px solid #e1dfdd;
+    border-radius: 0 0 6px 6px;
+    border-top: 1px solid #d2d0ce;
+}
+
+.controls-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.camera-dropdown-wrapper {
+    position: relative;
+}
+
+.camera-btn-with-dropdown {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border: none;
+    background: transparent;
+    border-radius: 0;
+    cursor: pointer;
+    font-size: 14px;
+    color: #252423;
+    transition: all 0.2s;
+}
+
+.camera-btn-with-dropdown:hover {
+    background: #f3f2f1;
+}
+
+.camera-btn-with-dropdown .dropdown-arrow {
+    font-size: 10px;
+    margin-left: 2px;
+}
+
+.camera-toggle-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.mic-toggle-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    border-radius: 20px;
+    transition: all 0.3s;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: all 0.3s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: #6264a7;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(16px);
+}
+
+.settings-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: #605e5c;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.settings-btn:hover {
+    background: #f3f2f1;
+}
+
+.vertical-separator {
+    width: 1px;
+    height: 16px;
+    background-color: #d2d0ce;
+    margin: 0 8px;
+}
+
+.background-filters-text {
+    font-size: 13px;
+    color: #8a8886;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.background-filters-text i {
+    font-size: 14px;
+}
+
+/* Audio section (droite) */
+.setup-audio-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 0;
+}
+
+/* Groupe Computer audio + device selector (séparés légèrement) */
+.audio-group-box {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.audio-group-box .audio-option-new {
+    border: 1px solid #d2d0ce;
+    border-radius: 6px 6px 0 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    padding: 28px 17px;
+}
+
+.audio-group-box .audio-device-new {
+    border: 1px solid #d2d0ce;
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.audio-option-new {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 26px 17px;
+    border: 1px solid #d2d0ce;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.audio-option-new:hover {
+    background: #f3f2f1;
+}
+
+.audio-option-new input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #6264a7;
+}
+
+.audio-option-new label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #252423;
+    cursor: pointer;
+    flex: 1;
+}
+
+.audio-device-new {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 26px 17px;
+    background: #f3f2f1;
+    border: 1px solid #d2d0ce;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.audio-device-new i {
+    color: #605e5c;
+    font-size: 16px;
+    width: 20px;
+}
+
+.audio-device-new select {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    color: #252423;
+    cursor: pointer;
+    outline: none;
+}
+
+.audio-level-indicator {
+    width: 40px;
+    height: 8px;
+    background: #e1dfdd;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.audio-level-indicator.active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 70%;
+    background: #6264a7;
+    border-radius: 4px;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { width: 30%; }
+    50% { width: 70%; }
+}
+
+/* Footer avec boutons */
+.setup-footer-new {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 24px;
+    border-top: 1px solid #edebe9;
+}
+
+.setup-cancel-btn-new {
+    padding: 10px 24px;
+    border: 1px solid #8a8886;
+    background: white;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #252423;
+    transition: all 0.2s;
+}
+
+.setup-cancel-btn-new:hover {
+    background: #f3f2f1;
+}
+
+.setup-join-btn-new {
+    padding: 10px 24px;
+    background: #6264a7;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.setup-join-btn-new:hover {
+    background: #5558a0;
+}
+
+/* ========================================
+   STEP 3: WAITING ROOM
+   ======================================== */
+
+.waiting-room {
+    width: 100vw;
+    height: 100vh;
+    background-color: #f3f2f1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Simple waiting room style (like Teams) */
+.waiting-simple-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 40px;
+}
+
+.waiting-teams-logo {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 24px;
+}
+
+.waiting-greeting {
+    font-size: 24px;
+    font-weight: 400;
+    color: #252423;
+    margin-bottom: 8px;
+    max-width: 600px;
+}
+
+.waiting-meeting-name {
+    font-size: 14px;
+    color: #6264a7;
+    margin: 0;
+}
+
+.waiting-topbar {
+    background: white;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    border-bottom: 1px solid #edebe9;
+}
+
+.waiting-time {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #252423;
+}
+
+.waiting-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.waiting-control-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.waiting-control-btn:hover {
+    background: #f3f2f1;
+}
+
+.waiting-control-btn i {
+    font-size: 20px;
+    color: #252423;
+}
+
+.waiting-control-btn span {
+    font-size: 12px;
+    color: #252423;
+}
+
+.waiting-control-dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.waiting-dropdown-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    margin-left: -8px;
+    color: #605e5c;
+    font-size: 12px;
+}
+
+.waiting-dropdown-toggle:hover {
+    color: #252423;
+}
+
+.waiting-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    background: white;
+    border: 1px solid #edebe9;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 280px;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 1000;
+    padding: 8px 0;
+}
+
+.dropdown-header {
+    font-size: 12px;
+    font-weight: 600;
+    color: #605e5c;
+    padding: 8px 16px 4px;
+}
+
+.waiting-dropdown-menu .device-option {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #252423;
+}
+
+.waiting-dropdown-menu .device-option:hover {
+    background: #f3f2f1;
+}
+
+.waiting-dropdown-menu .device-option.selected {
+    background: #e1dfdd;
+}
+
+.waiting-dropdown-menu .device-option input[type="radio"] {
+    margin-right: 12px;
+}
+
+.dropdown-device-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #252423;
+}
+
+.dropdown-device-item:hover {
+    background: #f3f2f1;
+}
+
+.dropdown-device-item input[type="radio"] {
+    margin-right: 12px;
+    cursor: pointer;
+}
+
+.dropdown-device-item label {
+    cursor: pointer;
+    flex: 1;
+}
+
+.waiting-leave-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    background: #c4314b;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+}
+
+.waiting-leave-btn:hover {
+    background: #a72d3f;
+}
+
+.waiting-leave-btn i {
+    font-size: 20px;
+    color: white;
+}
+
+.waiting-leave-btn span {
+    font-size: 12px;
+    color: white;
+}
+
+.waiting-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.waiting-avatar {
+    margin-bottom: 30px;
+}
+
+.avatar-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: #d2c4e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    font-weight: 600;
+    color: #5b2c6f;
+}
+
+.waiting-content h2 {
+    font-size: 20px;
+    font-weight: 400;
+    color: #252423;
+}
+
+.admission-notification {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    min-width: 350px;
+}
+
+.admission-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.admission-card i {
+    font-size: 32px;
+    color: #6264a7;
+}
+
+.admission-card p {
+    font-size: 16px;
+    color: #252423;
+}
+
+.admission-guest-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #605e5c;
+}
+
+.more-info {
+    color: #6264a7;
+    text-decoration: none;
+}
+
+.admission-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.admission-deny-btn {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #8a8886;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.admission-deny-btn:hover {
+    background: #f3f2f1;
+}
+
+.admission-admit-btn {
+    flex: 1;
+    padding: 10px;
+    background: #6264a7;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.admission-admit-btn:hover {
+    background: #5558a0;
+}
+
+/* Meeting admission notification (for host in main meeting) */
+.meeting-admission-notification {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    min-width: 320px;
+    z-index: 1000;
+}
+
+/* ========================================
+   STEP 4: MAIN MEETING INTERFACE
+   ======================================== */
+
+.main-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #f3f2f1;
+}
+
+/* Top Bar */
+.top-bar {
+    background: white;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    border-bottom: 1px solid #edebe9;
+}
+
+.top-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #252423;
+}
+
+.top-bar-center {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.top-bar-separator {
+    width: 2px;
+    height: 32px;
+    background: #d1d1d1;
+    margin: 0 4px;
+}
+
+.top-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.top-btn img {
+    transition: filter 0.2s;
+    transform: scale(1.2584);
+}
+
+.top-btn:hover {
+    background: #f3f2f1;
+}
+
+.top-btn:hover img {
+    filter: invert(36%) sepia(85%) saturate(1465%) hue-rotate(215deg) brightness(95%) contrast(92%);
+}
+
+.top-btn:hover span {
+    color: #5b5fc7;
+}
+
+/* SVG inline hover effect - outline to filled with blue glow */
+.top-btn svg {
+    transition: filter 0.2s ease;
+}
+
+.top-btn svg .outline {
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+
+.top-btn svg .filled {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.top-btn:hover svg {
+    filter: drop-shadow(0 0 4px #3b82f6) drop-shadow(0 0 8px #3b82f6);
+}
+
+.top-btn:hover svg .outline {
+    opacity: 0;
+}
+
+.top-btn:hover svg .filled {
+    opacity: 1;
+}
+
+.top-btn i {
+    font-size: 20px;
+    color: #252423;
+}
+
+.top-btn span {
+    font-size: 12px;
+    color: #252423;
+    transition: color 0.2s;
+    font-weight: 200;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: 0.2px;
+}
+
+/* Removed active background to keep buttons uniform */
+/* .top-btn.active {
+    background: #e1dfdd;
+} */
+
+.top-btn.inactive {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.top-btn.inactive span {
+    color: #a19f9d;
+}
+
+.top-btn.inactive img {
+    opacity: 0.4;
+}
+
+.top-leave-btn {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background: #c4314b;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+}
+
+.top-leave-btn:hover {
+    background: #a72d3f;
+}
+
+.top-leave-btn i {
+    font-size: 20px;
+    color: white;
+}
+
+.top-leave-btn span {
+    font-size: 12px;
+    color: white;
+}
+
+.top-bar-right {
+    font-size: 14px;
+    color: #252423;
+}
+
+/* Meeting Content */
+.meeting-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.video-area {
+    flex: 1;
+    padding: 8px;
+    overflow: auto;
+    position: relative; /* For absolute positioned notification */
+}
+
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 8px;
+    height: 100%;
+    max-width: none;
+    margin: 0;
+}
+
+.video-container {
+    background: #201f1e;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.video-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.video-avatar {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f3f2f1;
+}
+
+.video-avatar-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: #f0d4d4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    font-weight: 600;
+    color: #7a2c3c;
+}
+
+.video-avatar-name {
+    margin-top: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #7a2c3c;
+}
+
+.video-avatar-role {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #7a2c3c;
+    opacity: 0.8;
+}
+
+.video-avatar-fireflies {
+    background: #e8d5f0;
+}
+
+.video-name-tag {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    background: rgba(0,0,0,0.85);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    color: white;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 20px;
+}
+
+.video-name-tag img {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    filter: brightness(0) invert(1);
+}
+
+/* Meeting Chat Panel */
+.meeting-chat-panel {
+    width: 311px;
+    background: white;
+    border-left: 1px solid #edebe9;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #edebe9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #252423;
+}
+
+.chat-underline {
+    text-decoration: underline;
+    text-decoration-color: #6264a7;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+}
+
+.chat-header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.chat-action-btn {
+    background: none;
+    border: none;
+    color: #605e5c;
+    font-size: 20.8px;
+    font-weight: 100;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.chat-action-btn:hover {
+    background: #f3f2f1;
+}
+
+.meeting-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.chat-message {
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.chat-message.own {
+    flex-direction: row-reverse;
+    align-items: flex-end;
+}
+
+.chat-message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #bdbdbd;
+    color: #616161;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 20px;
+    margin-right: -8px;
+    z-index: 1;
+}
+
+.chat-message.own .chat-message-avatar {
+    display: none;
+}
+
+.chat-message-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    max-width: 70%;
+}
+
+.chat-message.own .chat-message-content {
+    align-items: flex-end;
+}
+
+.chat-message-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #605e5c;
+}
+
+.chat-message.own .chat-message-header {
+    flex-direction: row-reverse;
+}
+
+.chat-message-sender {
+    font-weight: 600;
+    color: #6b6b6b;
+}
+
+.chat-message.own .chat-message-sender {
+    display: none;
+}
+
+.chat-message-time {
+    color: #8a8886;
+    font-size: 11px;
+}
+
+.chat-message-text {
+    background: #e0e0e0;
+    padding: 10px 12px;
+    padding-left: 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #252423;
+    position: relative;
+}
+
+.chat-message-text.own-message {
+    background: #5b5fc7;
+    color: #ffffff;
+    border-radius: 18px;
+    padding: 10px 16px;
+}
+
+.chat-message-text.own-message::after {
+    content: "✓";
+    position: absolute;
+    bottom: 4px;
+    right: -12px;
+    font-size: 5px;
+    color: #5b5fc7;
+    width: 8px;
+    height: 8px;
+    border: 1px solid #5b5fc7;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 8px;
+    text-align: center;
+}
+
+.chat-message-text.sarah {
+    background: #e0e0e0;
+    border-left: none;
+}
+
+.chat-input-area {
+    padding: 16px 20px;
+}
+
+.chat-input-container {
+    position: relative;
+    border: 1px solid #d1d1d1;
+    border-bottom: 2px solid #5b5fc7;
+    border-radius: 8px;
+    background: white;
+    min-height: 68px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-input-area textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px 8px 0 0;
+    font-size: 14px;
+    outline: none;
+    resize: none;
+    flex: 1;
+    min-height: 40px;
+    font-family: inherit;
+}
+
+.chat-input-area textarea::placeholder {
+    color: #8a8886;
+}
+
+.chat-input-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px 8px 8px;
+}
+
+.chat-input-separator {
+    width: 1px;
+    height: 20px;
+    background: #d1d1d1;
+    margin: 0 4px;
+}
+
+.chat-input-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-input-btn img {
+    width: 20px;
+    height: 20px;
+}
+
+.chat-input-btn:hover {
+    opacity: 0.7;
+}
+
+.chat-send-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-send-btn img {
+    width: 20px;
+    height: 20px;
+}
+
+.chat-send-btn:hover {
+    background: #5558a0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f3f2f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c8c6c4;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a19f9d;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .meeting-chat-panel {
+        width: 320px;
+    }
+}
+
+@media (max-width: 768px) {
+    .video-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(4, 1fr);
+    }
+
+    .meeting-chat-panel {
+        position: absolute;
+        right: 0;
+        top: 60px;
+        height: calc(100% - 60px);
+        z-index: 100;
+        box-shadow: -4px 0 16px rgba(0,0,0,0.1);
+    }
+}
+
+/* ========================================
+   HOST VIDEO CONTROL PANEL
+   ======================================== */
+
+.host-video-control {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    padding: 15px;
+    z-index: 1000;
+    border: 1px solid #edebe9;
+}
+
+.video-control-header {
+    margin-bottom: 12px;
+}
+
+.video-control-header h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #252423;
+    margin: 0;
+}
+
+.video-control-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.video-control-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f3f2f1;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 70px;
+}
+
+.video-control-btn:hover {
+    background: #edebe9;
+}
+
+.video-control-btn.active {
+    background: #e8f4f8;
+    border-color: #6264a7;
+}
+
+.video-control-btn i {
+    font-size: 20px;
+    color: #6264a7;
+    margin-bottom: 4px;
+}
+
+.video-control-btn span {
+    font-size: 12px;
+    color: #252423;
+    font-weight: 500;
+}

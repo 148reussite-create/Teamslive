@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microsoft Teams Meeting</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Step 1: Teams Logo Splash Screen -->
+    <div id="splash-screen" class="splash-screen">
+        <img src="teams-logo.svg" alt="Microsoft Teams" class="teams-logo">
+    </div>
+
+    <!-- Step 2: Audio/Video Setup -->
+    <div id="setup-screen" class="setup-screen" style="display: none;">
+        <div class="setup-container-new">
+            <!-- Logo Teams centré en haut -->
+            <div class="setup-header-centered">
+                <img src="teams-logo.svg" alt="Microsoft Teams" width="48" height="48">
+            </div>
+
+            <!-- Titre et date centrés -->
+            <h1 class="setup-title-centered" id="setup-meeting-title">Meeting PWC</h1>
+            <p class="setup-time-centered" id="setup-meeting-time">Monday, Dec 29 • 4:30 PM – 5:00 PM GMT+1</p>
+
+            <!-- Layout avec vidéo à gauche et audio à droite -->
+            <div class="setup-content-grid">
+                <!-- Vidéo à gauche -->
+                <div class="setup-video-section">
+                    <div class="setup-video-preview">
+                        <video id="setup-video" autoplay muted></video>
+                        <div id="setup-video-off" class="setup-video-off">
+                            <i class="fas fa-video-slash"></i>
+                            <p>Your camera is turned off</p>
+                        </div>
+                    </div>
+                    <div class="setup-video-controls-bottom">
+                        <button id="setup-camera-toggle" class="setup-control-btn-new">
+                            <i class="fas fa-video-slash"></i>
+                        </button>
+                        <button id="setup-mic-toggle" class="setup-control-btn-new active">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button class="setup-control-btn-new">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <span class="background-filters-text">
+                            <i class="fas fa-image"></i> Background filters
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Options audio à droite -->
+                <div class="setup-audio-section">
+                    <div class="audio-option-new">
+                        <input type="radio" id="computer-audio" name="audio" checked>
+                        <label for="computer-audio">Computer audio</label>
+                    </div>
+
+                    <div class="audio-device-new">
+                        <i class="fas fa-microphone"></i>
+                        <select id="microphone-select">
+                            <option>Microphone (3- Razer Kiyo)</option>
+                        </select>
+                        <div class="audio-level-indicator active"></div>
+                    </div>
+
+                    <div class="audio-device-new">
+                        <i class="fas fa-volume-up"></i>
+                        <select id="speaker-select">
+                            <option>K273 E (NVIDIA High Definition Audio)</option>
+                        </select>
+                    </div>
+
+                    <div class="audio-option-new">
+                        <input type="radio" id="phone-audio" name="audio">
+                        <label for="phone-audio">Phone audio</label>
+                    </div>
+
+                    <div class="audio-option-new">
+                        <input type="radio" id="no-audio" name="audio">
+                        <label for="no-audio">Don't use audio</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Boutons en bas à droite -->
+            <div class="setup-footer-new">
+                <button class="setup-cancel-btn-new">Cancel</button>
+                <button id="join-now-btn" class="setup-join-btn-new">Join now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: Waiting Room (for participants) / Lobby (for host) -->
+    <div id="waiting-room" class="waiting-room" style="display: none;">
+        <!-- Top bar for waiting -->
+        <div class="waiting-topbar">
+            <div class="waiting-time">
+                <i class="far fa-clock"></i>
+                <span id="waiting-timer">00:00</span>
+            </div>
+            <div class="waiting-controls">
+                <button class="waiting-control-btn"><i class="fas fa-comment"></i> <span>Chat</span></button>
+                <button class="waiting-control-btn"><i class="fas fa-users"></i> <span>People</span></button>
+                <button class="waiting-control-btn"><i class="fas fa-hand-paper"></i> <span>Raise</span></button>
+                <button class="waiting-control-btn"><i class="fas fa-smile"></i> <span>React</span></button>
+                <button class="waiting-control-btn"><i class="fas fa-th"></i> <span>View</span></button>
+                <button class="waiting-control-btn"><i class="fas fa-ellipsis-h"></i> <span>More</span></button>
+                <button id="waiting-camera-btn" class="waiting-control-btn"><i class="fas fa-video"></i> <span>Camera</span></button>
+                <button id="waiting-mic-btn" class="waiting-control-btn"><i class="fas fa-microphone"></i> <span>Mic</span></button>
+                <button class="waiting-control-btn"><i class="fas fa-desktop"></i> <span>Share</span></button>
+                <button class="waiting-leave-btn"><i class="fas fa-phone-slash"></i> <span>Leave</span></button>
+            </div>
+        </div>
+
+        <div class="waiting-content">
+            <div class="waiting-avatar">
+                <div class="avatar-circle" id="waiting-avatar">SB</div>
+            </div>
+            <h2 id="waiting-message">Waiting for others to join...</h2>
+
+            <!-- Admission notification for host -->
+            <div id="admission-notification" class="admission-notification" style="display: none;">
+                <div class="admission-card">
+                    <i class="fas fa-user-clock"></i>
+                    <p><strong id="waiting-guest-name">Guest</strong> is waiting in the lobby</p>
+                    <div class="admission-guest-info">
+                        <span id="waiting-guest-detail">stephanie (Guest)</span>
+                        <a href="#" class="more-info">More info</a>
+                    </div>
+                    <div class="admission-actions">
+                        <button id="deny-btn" class="admission-deny-btn">Deny</button>
+                        <button id="admit-btn" class="admission-admit-btn">Admit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 4: Main Meeting Interface -->
+    <div id="main-container" class="main-container" style="display: none;">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <i class="far fa-clock"></i>
+                <span id="meeting-timer">00:00</span>
+            </div>
+
+            <div class="top-bar-center">
+                <button class="top-btn"><i class="fas fa-comment"></i> <span>Chat</span></button>
+                <button class="top-btn"><i class="fas fa-users"></i> <span>People</span></button>
+                <button class="top-btn"><i class="fas fa-hand-paper"></i> <span>Raise</span></button>
+                <button class="top-btn"><i class="fas fa-smile"></i> <span>React</span></button>
+                <button class="top-btn"><i class="fas fa-th"></i> <span>View</span></button>
+                <button class="top-btn"><i class="fas fa-ellipsis-h"></i> <span>More</span></button>
+                <button id="main-camera-btn" class="top-btn active"><i class="fas fa-video"></i> <span>Camera</span></button>
+                <button id="main-mic-btn" class="top-btn active"><i class="fas fa-microphone"></i> <span>Mic</span></button>
+                <button class="top-btn"><i class="fas fa-desktop"></i> <span>Share</span></button>
+                <button class="top-leave-btn"><i class="fas fa-phone-slash"></i> <span>Leave</span></button>
+            </div>
+
+            <div class="top-bar-right">
+                <span id="current-user-name">User</span>
+            </div>
+        </div>
+
+        <!-- Content: Videos + Chat -->
+        <div class="meeting-content">
+            <!-- Video Grid -->
+            <div class="video-area">
+                <div id="video-grid" class="video-grid">
+                    <!-- Videos will be added dynamically -->
+                </div>
+            </div>
+
+            <!-- Meeting Chat (always visible) -->
+            <div id="meeting-chat-panel" class="meeting-chat-panel">
+                <div class="chat-header">
+                    <h3>Meeting <span class="chat-underline">chat</span></h3>
+                    <div class="chat-header-actions">
+                        <button class="chat-action-btn" title="Open in fullscreen"><i class="fas fa-expand"></i></button>
+                        <button class="chat-action-btn" title="Close chat"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                <div id="meeting-chat-messages" class="meeting-chat-messages">
+                    <!-- Sarah's initial message will be added here -->
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="meeting-chat-input" placeholder="Type a message">
+                    <div class="chat-input-actions">
+                        <button class="chat-input-btn"><i class="far fa-smile"></i></button>
+                        <button class="chat-input-btn"><i class="fas fa-paperclip"></i></button>
+                        <button class="chat-input-btn"><i class="fas fa-ellipsis-h"></i></button>
+                        <button id="send-message-btn" class="chat-send-btn"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

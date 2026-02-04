@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Host - Microsoft Teams Meeting</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .host-upload-screen {
+            width: 100vw;
+            min-height: 100vh;
+            background-color: #f3f2f1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            overflow-y: auto;
+        }
+
+        .host-upload-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 700px;
+            width: 100%;
+            padding: 30px;
+            max-height: none;
+        }
+
+        .host-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .teams-icon {
+            width: 50px;
+            height: 50px;
+        }
+
+        .host-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #252423;
+            margin-bottom: 10px;
+        }
+
+        .host-subtitle {
+            font-size: 14px;
+            color: #605e5c;
+            margin-bottom: 20px;
+        }
+
+        .video-upload-section {
+            margin-bottom: 20px;
+        }
+
+        .video-upload-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #252423;
+            margin-bottom: 15px;
+        }
+
+        .video-upload-box {
+            border: 2px dashed #d2d0ce;
+            border-radius: 8px;
+            padding: 25px 20px;
+            text-align: center;
+            background: #faf9f8;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .video-upload-box:hover {
+            border-color: #6264a7;
+            background: #f3f2f1;
+        }
+
+        .video-upload-box i {
+            font-size: 36px;
+            color: #6264a7;
+            margin-bottom: 10px;
+        }
+
+        .video-upload-box p {
+            color: #605e5c;
+            font-size: 14px;
+        }
+
+        .video-upload-box input {
+            display: none;
+        }
+
+        .video-preview {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .video-preview video {
+            width: 100%;
+            max-height: 180px;
+            border-radius: 8px;
+            background: #000;
+        }
+
+        .video-info {
+            margin-top: 10px;
+            padding: 12px;
+            background: #f3f2f1;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .video-info span {
+            font-size: 14px;
+            color: #252423;
+        }
+
+        .remove-video-btn {
+            background: none;
+            border: none;
+            color: #c4314b;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 8px;
+        }
+
+        .remove-video-btn:hover {
+            text-decoration: underline;
+        }
+
+        .video-slot {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #edebe9;
+        }
+
+        .video-slot:last-child {
+            border-bottom: none;
+        }
+
+        .host-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #edebe9;
+        }
+
+        .host-btn-secondary {
+            background: white;
+            border: 1px solid #8a8886;
+            padding: 10px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #252423;
+        }
+
+        .host-btn-secondary:hover {
+            background-color: #f3f2f1;
+        }
+
+        .host-btn-primary {
+            background: #6264a7;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .host-btn-primary:hover {
+            background: #4b4d8c;
+        }
+
+        .host-btn-primary:disabled {
+            background: #c8c6c4;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="host-upload-screen">
+        <div class="host-upload-container">
+            <div class="host-header">
+                <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2228.833 2073.333' class="teams-icon">
+                    <g fill='#5059C9'>
+                        <circle r='259.333' cy='1281.667' cx='1683.333'/>
+                        <circle r='259.333' cy='1281.667' cx='1089.833'/>
+                    </g>
+                    <g fill='#7B83EB'>
+                        <circle r='259.333' cy='1813.333' cx='1683.333'/>
+                        <circle r='259.333' cy='1813.333' cx='1089.833'/>
+                    </g>
+                    <path fill='#5059C9' d='M1813.333,0H1222.667c-41.237,0-74.667,33.429-74.667,74.667v149.333h519.893 c124.331,0,225.107,100.776,225.107,225.107v519.893h149.333c41.237,0,74.667-33.43,74.667-74.667V74.667 C2116.333,33.429,2082.904,0,2041.667,0H1813.333z'/>
+                    <rect x='148' y='224' fill='#7B83EB' width='1000' height='1000'/>
+                    <path fill='#FFF' d='M611.026,672.734h-72.799v254.176h-86.351V672.734h-72.799v-73.411h231.949V672.734z M1148,599.323 v327.587h-80.058l-9.181-36.725h-2.453c-27.433,29.274-64.771,43.298-105.709,43.298c-34.877,0-62.922-11.628-82.511-33.659 c-19.588-23.256-29.886-55.739-29.886-98.063V599.323h86.351v193.657c0,22.644,4.906,39.791,15.331,51.444 c10.425,11.04,24.366,16.867,42.074,16.867c19.589,0,36.116-6.44,49.445-19.932c13.329-13.492,19.588-30.027,19.588-50.691 V599.323H1148z'/>
+                </svg>
+            </div>
+
+            <h1 class="host-title">Host Meeting Setup</h1>
+            <p class="host-subtitle">Upload up to 2 videos that will appear as your webcam during the meeting</p>
+
+            <div class="video-upload-section">
+                <!-- Video Slot 1 -->
+                <div class="video-slot">
+                    <h3>Video 1 (Primary)</h3>
+                    <div class="video-upload-box" id="upload-box-1" onclick="document.getElementById('video-input-1').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Click to upload</strong> or drag and drop</p>
+                        <p style="font-size: 12px; margin-top: 5px;">MP4, WebM, or OGG (max 500MB)</p>
+                        <input type="file" id="video-input-1" accept="video/mp4,video/webm,video/ogg">
+                    </div>
+                    <div class="video-preview" id="preview-1">
+                        <video id="video-player-1" controls></video>
+                        <div class="video-info">
+                            <span id="video-name-1">video.mp4</span>
+                            <button class="remove-video-btn" onclick="removeVideo(1)">Remove</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Slot 2 -->
+                <div class="video-slot">
+                    <h3>Video 2 (Optional)</h3>
+                    <div class="video-upload-box" id="upload-box-2" onclick="document.getElementById('video-input-2').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Click to upload</strong> or drag and drop</p>
+                        <p style="font-size: 12px; margin-top: 5px;">MP4, WebM, or OGG (max 500MB)</p>
+                        <input type="file" id="video-input-2" accept="video/mp4,video/webm,video/ogg">
+                    </div>
+                    <div class="video-preview" id="preview-2">
+                        <video id="video-player-2" controls></video>
+                        <div class="video-info">
+                            <span id="video-name-2">video.mp4</span>
+                            <button class="remove-video-btn" onclick="removeVideo(2)">Remove</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="host-actions">
+                <button class="host-btn-secondary" onclick="window.close()">Cancel</button>
+                <button class="host-btn-primary" id="start-meeting-btn" onclick="handleStartMeeting()">Start Meeting</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let uploadedVideos = { 1: null, 2: null };
+
+        // Handle video uploads
+        document.getElementById('video-input-1').addEventListener('change', (e) => handleVideoUpload(e, 1));
+        document.getElementById('video-input-2').addEventListener('change', (e) => handleVideoUpload(e, 2));
+
+        function handleVideoUpload(event, slot) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Check file size (500MB max)
+            if (file.size > 500 * 1024 * 1024) {
+                alert('File is too large. Maximum size is 500MB.');
+                return;
+            }
+
+            // Store video file
+            uploadedVideos[slot] = file;
+
+            // Show preview
+            const videoURL = URL.createObjectURL(file);
+            document.getElementById(`video-player-${slot}`).src = videoURL;
+            document.getElementById(`video-name-${slot}`).textContent = file.name;
+            document.getElementById(`upload-box-${slot}`).style.display = 'none';
+            document.getElementById(`preview-${slot}`).style.display = 'block';
+
+            // Enable start button if at least video 1 is uploaded
+            updateStartButton();
+        }
+
+        function removeVideo(slot) {
+            uploadedVideos[slot] = null;
+            document.getElementById(`video-player-${slot}`).src = '';
+            document.getElementById(`upload-box-${slot}`).style.display = 'block';
+            document.getElementById(`preview-${slot}`).style.display = 'none';
+            document.getElementById(`video-input-${slot}`).value = '';
+            updateStartButton();
+        }
+
+        function updateStartButton() {
+            const startBtn = document.getElementById('start-meeting-btn');
+            const shouldDisable = !uploadedVideos[1];
+
+            // Change visual style
+            if (shouldDisable) {
+                startBtn.style.backgroundColor = '#c8c6c4';
+                startBtn.style.cursor = 'not-allowed';
+                startBtn.style.opacity = '0.6';
+            } else {
+                startBtn.style.backgroundColor = '#6264a7';
+                startBtn.style.cursor = 'pointer';
+                startBtn.style.opacity = '1';
+            }
+
+            console.log('Button state updated:', shouldDisable, uploadedVideos);
+        }
+
+        // Handler that checks before calling startMeeting
+        function handleStartMeeting() {
+            console.log('handleStartMeeting called', uploadedVideos);
+
+            if (!uploadedVideos[1]) {
+                alert('Please upload at least Video 1 to start the meeting');
+                return false;
+            }
+
+            startMeeting();
+            return false;
+        }
+
+        // Start meeting
+        function startMeeting() {
+            console.log('Start Meeting - redirecting!');
+
+            // Store that user is host
+            sessionStorage.setItem('isHost', 'true');
+            sessionStorage.setItem('userName', 'Host');
+
+            console.log('Redirecting to /meeting...');
+
+            // Simple redirect for now (videos will be handled later)
+            window.location.href = '/meeting';
+        }
+    </script>
+</body>
+</html>

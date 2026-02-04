@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Host Setup - Microsoft Teams Meeting</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .setup-screen {
+            width: 100vw;
+            min-height: 100vh;
+            background-color: #f3f2f1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            overflow-y: auto;
+        }
+
+        .setup-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+
+        .setup-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #252423;
+            margin-bottom: 10px;
+        }
+
+        .setup-subtitle {
+            font-size: 14px;
+            color: #605e5c;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #faf9f8;
+            border-radius: 8px;
+            border: 1px solid #edebe9;
+        }
+
+        .section h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #252423;
+            margin-bottom: 15px;
+        }
+
+        .participant-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            color: #252423;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #8a8886;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #6264a7;
+        }
+
+        .generated-link {
+            display: none;
+            margin-top: 10px;
+            padding: 12px;
+            background: #e8f4f8;
+            border-radius: 4px;
+            border: 1px solid #0078d4;
+        }
+
+        .generated-link.show {
+            display: block;
+        }
+
+        .link-text {
+            font-size: 13px;
+            color: #0078d4;
+            word-break: break-all;
+            margin-bottom: 8px;
+        }
+
+        .btn-small {
+            background: #0078d4;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-right: 10px;
+        }
+
+        .btn-small:hover {
+            background: #106ebe;
+        }
+
+        .video-upload-box {
+            border: 2px dashed #d2d0ce;
+            border-radius: 8px;
+            padding: 30px 20px;
+            text-align: center;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .video-upload-box:hover {
+            border-color: #6264a7;
+            background: #f3f2f1;
+        }
+
+        .video-upload-box i {
+            font-size: 36px;
+            color: #6264a7;
+            margin-bottom: 10px;
+        }
+
+        .video-upload-box p {
+            color: #605e5c;
+            font-size: 14px;
+        }
+
+        .video-upload-box input {
+            display: none;
+        }
+
+        .video-preview {
+            display: none;
+            margin-bottom: 15px;
+        }
+
+        .video-preview.show {
+            display: block;
+        }
+
+        .video-preview video {
+            width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            background: #000;
+        }
+
+        .video-info {
+            margin-top: 10px;
+            padding: 12px;
+            background: #f3f2f1;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .video-info span {
+            font-size: 14px;
+            color: #252423;
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #c4314b;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 8px;
+        }
+
+        .remove-btn:hover {
+            text-decoration: underline;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #edebe9;
+        }
+
+        .btn-primary {
+            background: #6264a7;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: #4b4d8c;
+        }
+
+        .btn-primary:disabled {
+            background: #c8c6c4;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-screen">
+        <div class="setup-container">
+            <h1 class="setup-title">Host Meeting Setup</h1>
+            <p class="setup-subtitle">Enter your name and configure participants</p>
+
+            <!-- Host Name Section -->
+            <div class="section">
+                <h3>Your Name (Host)</h3>
+                <div class="participant-row">
+                    <div class="input-group">
+                        <label for="host-firstname">First Name</label>
+                        <input type="text" id="host-firstname" placeholder="e.g., Sarah">
+                    </div>
+                    <div class="input-group">
+                        <label for="host-lastname">Last Name</label>
+                        <input type="text" id="host-lastname" placeholder="e.g., Brown">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Participants Section -->
+            <div class="section">
+                <h3>Participants (2 maximum)</h3>
+
+                <!-- Participant 1 (with videos) -->
+                <div class="participant-row">
+                    <div class="input-group">
+                        <label for="firstname1">First Name</label>
+                        <input type="text" id="firstname1" placeholder="e.g., Jane">
+                    </div>
+                    <div class="input-group">
+                        <label for="lastname1">Last Name</label>
+                        <input type="text" id="lastname1" placeholder="e.g., Smith">
+                    </div>
+                </div>
+                <button class="btn-small" onclick="generateLink(1, true)">Generate Link for Participant 1 (with videos)</button>
+                <div class="generated-link" id="link1">
+                    <div class="link-text" id="linktext1"></div>
+                    <button class="btn-small" onclick="copyLink(1)">Copy Link</button>
+                </div>
+
+                <!-- Participant 2 -->
+                <div class="participant-row" style="margin-top: 20px;">
+                    <div class="input-group">
+                        <label for="firstname2">First Name</label>
+                        <input type="text" id="firstname2" placeholder="e.g., Bob">
+                    </div>
+                    <div class="input-group">
+                        <label for="lastname2">Last Name</label>
+                        <input type="text" id="lastname2" placeholder="e.g., Johnson">
+                    </div>
+                </div>
+                <button class="btn-small" onclick="generateLink(2)">Generate Link for Participant 2</button>
+                <div class="generated-link" id="link2">
+                    <div class="link-text" id="linktext2"></div>
+                    <button class="btn-small" onclick="copyLink(2)">Copy Link</button>
+                </div>
+            </div>
+
+            <!-- Videos Section -->
+            <div class="section">
+                <h3>Your Videos (for host webcam replacement)</h3>
+                <p style="font-size: 13px; color: #605e5c; margin-bottom: 20px;">Upload up to 2 videos that you can play during the meeting instead of your webcam</p>
+
+                <!-- Video 1 -->
+                <div>
+                    <label style="font-size: 14px; font-weight: 600; color: #252423; display: block; margin-bottom: 10px;">Video 1</label>
+                    <div class="video-upload-box" id="upload-box-1" onclick="document.getElementById('video-input-1').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Click to upload</strong> or drag and drop</p>
+                        <p style="font-size: 12px; margin-top: 5px;">MP4, WebM, or OGG (max 500MB)</p>
+                        <input type="file" id="video-input-1" accept="video/mp4,video/webm,video/ogg">
+                    </div>
+                    <div class="video-preview" id="preview-1">
+                        <video id="video-player-1" controls></video>
+                        <div class="video-info">
+                            <span id="video-name-1">video.mp4</span>
+                            <button class="remove-btn" onclick="removeVideo(1)">Remove</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video 2 -->
+                <div style="margin-top: 20px;">
+                    <label style="font-size: 14px; font-weight: 600; color: #252423; display: block; margin-bottom: 10px;">Video 2 (Optional)</label>
+                    <div class="video-upload-box" id="upload-box-2" onclick="document.getElementById('video-input-2').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Click to upload</strong> or drag and drop</p>
+                        <p style="font-size: 12px; margin-top: 5px;">MP4, WebM, or OGG (max 500MB)</p>
+                        <input type="file" id="video-input-2" accept="video/mp4,video/webm,video/ogg">
+                    </div>
+                    <div class="video-preview" id="preview-2">
+                        <video id="video-player-2" controls></video>
+                        <div class="video-info">
+                            <span id="video-name-2">video.mp4</span>
+                            <button class="remove-btn" onclick="removeVideo(2)">Remove</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn-primary" id="start-btn" onclick="startAsHost()">Start Meeting as Host</button>
+            </div>
+
+            <!-- Bouton de test -->
+            <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #edebe9;">
+                <p style="font-size: 12px; color: #605e5c; margin-bottom: 10px;">Pour tester sans vidéo:</p>
+                <button onclick="testQuickStart()"
+                        style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                    TEST - Quick Start (Host)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = window.location.origin;
+        let uploadedVideos = { 1: null, 2: null };
+
+        // Generate participant link
+        function generateLink(participantNum, hasVideos = false) {
+            const firstname = document.getElementById(`firstname${participantNum}`).value.trim();
+            const lastname = document.getElementById(`lastname${participantNum}`).value.trim();
+
+            if (!firstname || !lastname) {
+                alert('Please enter both first and last name');
+                return;
+            }
+
+            const fullName = `${firstname} ${lastname}`;
+            let link = `${baseUrl}/participant?name=${encodeURIComponent(fullName)}`;
+
+            // Add hasVideos parameter if participant can upload videos
+            if (hasVideos) {
+                link += `&hasVideos=true`;
+            }
+
+            document.getElementById(`linktext${participantNum}`).textContent = link;
+            document.getElementById(`link${participantNum}`).classList.add('show');
+
+            // Store link in sessionStorage for retrieval in meeting
+            sessionStorage.setItem(`participantLink${participantNum}`, link);
+            sessionStorage.setItem(`participantName${participantNum}`, fullName);
+        }
+
+        function copyLink(participantNum) {
+            const linkText = document.getElementById(`linktext${participantNum}`).textContent;
+            navigator.clipboard.writeText(linkText).then(() => {
+                // Link copied silently without popup
+                console.log('Link copied to clipboard');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        // Handle video uploads
+        document.getElementById('video-input-1').addEventListener('change', (e) => handleVideoUpload(e, 1));
+        document.getElementById('video-input-2').addEventListener('change', (e) => handleVideoUpload(e, 2));
+
+        function handleVideoUpload(event, slot) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Check file size (500MB max)
+            if (file.size > 500 * 1024 * 1024) {
+                alert('File is too large. Maximum size is 500MB.');
+                return;
+            }
+
+            // Store video file
+            uploadedVideos[slot] = file;
+
+            // Show preview
+            const videoURL = URL.createObjectURL(file);
+            document.getElementById(`video-player-${slot}`).src = videoURL;
+            document.getElementById(`video-name-${slot}`).textContent = file.name;
+            document.getElementById(`upload-box-${slot}`).style.display = 'none';
+            document.getElementById(`preview-${slot}`).classList.add('show');
+        }
+
+        function removeVideo(slot) {
+            uploadedVideos[slot] = null;
+            document.getElementById(`video-player-${slot}`).src = '';
+            document.getElementById(`upload-box-${slot}`).style.display = 'block';
+            document.getElementById(`preview-${slot}`).classList.remove('show');
+            document.getElementById(`video-input-${slot}`).value = '';
+        }
+
+        async function startAsHost() {
+            console.log('startAsHost called');
+
+            try {
+                // Get host name
+                const hostFirstname = document.getElementById('host-firstname').value.trim();
+                const hostLastname = document.getElementById('host-lastname').value.trim();
+
+                if (!hostFirstname || !hostLastname) {
+                    alert('Please enter your first and last name');
+                    return;
+                }
+
+                const hostFullName = `${hostFirstname} ${hostLastname}`;
+
+                // Store host info
+                sessionStorage.setItem('isHost', 'true');
+                sessionStorage.setItem('userName', hostFullName);
+
+                // Store videos in IndexedDB instead of sessionStorage
+                if (uploadedVideos[1] || uploadedVideos[2]) {
+                    await storeVideosInIndexedDB();
+                }
+
+                console.log('Redirecting to meeting...');
+                // Redirect to meeting
+                window.location.href = '/meeting';
+            } catch (error) {
+                console.error('Error in startAsHost:', error);
+                alert('Error starting meeting: ' + error.message);
+            }
+        }
+
+        function testQuickStart() {
+            // Quick test function - sets host with default name
+            sessionStorage.setItem('isHost', 'true');
+            sessionStorage.setItem('userName', 'Test Host');
+            console.log('Quick start as host');
+            window.location.href = '/meeting';
+        }
+
+        async function storeVideosInIndexedDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('TeamsCloneDB', 1);
+
+                request.onerror = () => reject(request.error);
+
+                request.onsuccess = (event) => {
+                    const db = event.target.result;
+                    const transaction = db.transaction(['videos'], 'readwrite');
+                    const store = transaction.objectStore('videos');
+
+                    // Clear old videos first
+                    store.clear();
+
+                    // Store video 1
+                    if (uploadedVideos[1]) {
+                        store.put({ id: 1, file: uploadedVideos[1] });
+                    }
+
+                    // Store video 2
+                    if (uploadedVideos[2]) {
+                        store.put({ id: 2, file: uploadedVideos[2] });
+                    }
+
+                    transaction.oncomplete = () => {
+                        console.log('Videos stored in IndexedDB');
+                        resolve();
+                    };
+
+                    transaction.onerror = () => reject(transaction.error);
+                };
+
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains('videos')) {
+                        db.createObjectStore('videos', { keyPath: 'id' });
+                    }
+                };
+            });
+        }
+    </script>
+</body>
+</html>

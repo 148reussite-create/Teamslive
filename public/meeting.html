@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microsoft Teams Meeting</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Step 1: Teams Logo Splash Screen -->
+    <div id="splash-screen" class="splash-screen">
+        <img src="teams-logo.svg" alt="Microsoft Teams" class="teams-logo">
+    </div>
+
+    <!-- Step 2: Audio/Video Setup -->
+    <div id="setup-screen" class="setup-screen" style="display: none;">
+        <div class="setup-container-new">
+            <!-- Logo Teams centré en haut -->
+            <div class="setup-header-centered">
+                <img src="teams-logo.svg" alt="Microsoft Teams" width="48" height="48">
+            </div>
+
+            <!-- Titre et date centrés -->
+            <h1 class="setup-title-centered" id="setup-meeting-title">Meeting PWC</h1>
+            <p class="setup-time-centered" id="setup-meeting-time">Monday, Dec 29 • 4:30 PM – 5:00 PM GMT+1</p>
+
+            <!-- Layout avec vidéo à gauche et audio à droite -->
+            <div class="setup-content-grid">
+                <!-- Vidéo à gauche -->
+                <div class="setup-video-section">
+                    <div class="setup-video-preview">
+                        <video id="setup-video" autoplay muted></video>
+                        <div id="setup-video-off" class="setup-video-off">
+                            <i class="fas fa-video-slash"></i>
+                            <p>Your camera is turned off</p>
+                        </div>
+                    </div>
+                    <div class="setup-video-controls-bottom">
+                        <div class="controls-left">
+                            <div class="camera-dropdown-wrapper">
+                                <button id="setup-camera-icon" class="camera-btn-with-dropdown">
+                                    <img src="camera-video-off-svgrepo-com.svg" alt="Camera off" style="width: 16px; height: 16px;">
+                                    <i class="fas fa-chevron-down dropdown-arrow"></i>
+                                </button>
+                            </div>
+                            <div class="camera-toggle-wrapper">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="setup-camera-toggle">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <button class="settings-btn">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                            <span class="vertical-separator"></span>
+                            <span class="background-filters-text">
+                                Background filters
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Options audio à droite -->
+                <div class="setup-audio-section">
+                    <!-- Groupe collé: Computer audio + sélecteurs -->
+                    <div class="audio-group-box">
+                        <div class="audio-option-new" style="background: #ffffff;">
+                            <input type="radio" id="computer-audio" name="audio" checked>
+                            <label for="computer-audio">Computer audio</label>
+                        </div>
+
+                        <div class="audio-device-new">
+                            <div style="display: flex; flex-direction: column; gap: 20px; width: 100%;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <i class="fas fa-microphone"></i>
+                                    <select id="microphone-select" style="flex: 1; border: none; background: transparent; font-size: 14px; color: #252423; cursor: pointer; outline: none;">
+                                        <option>Microphone (3- Razer Kiyo)</option>
+                                    </select>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="mic-toggle" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <i class="fas fa-volume-up"></i>
+                                    <select id="speaker-select" style="flex: 1; border: none; background: transparent; font-size: 14px; color: #252423; cursor: pointer; outline: none;">
+                                        <option>K273 E (NVIDIA High Definition Audio)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="audio-option-new" style="background: #ffffff;">
+                        <input type="radio" id="no-audio" name="audio">
+                        <label for="no-audio">Don't use audio</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Boutons en bas à droite -->
+            <div class="setup-footer-new">
+                <button class="setup-cancel-btn-new">Cancel</button>
+                <button id="join-now-btn" class="setup-join-btn-new">Join now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: Waiting Room (for participants) / Lobby (for host) -->
+    <div id="waiting-room" class="waiting-room" style="display: none;">
+        <!-- Top bar for waiting -->
+        <div class="waiting-topbar">
+            <div class="waiting-time">
+                <i class="far fa-clock"></i>
+                <span id="waiting-timer">00:00</span>
+            </div>
+            <div class="waiting-controls">
+                <button class="waiting-control-btn"><i class="fas fa-comment"></i> <span>Chat</span></button>
+                <button class="waiting-control-btn"><i class="fas fa-users"></i> <span>People</span></button>
+                <button class="waiting-control-btn"><i class="fas fa-hand-paper"></i> <span>Raise</span></button>
+                <button class="waiting-control-btn"><i class="fas fa-smile"></i> <span>React</span></button>
+                <button class="waiting-control-btn"><i class="fas fa-th"></i> <span>View</span></button>
+                <button class="waiting-control-btn"><i class="fas fa-ellipsis-h"></i> <span>More</span></button>
+                <div class="waiting-control-dropdown">
+                    <button id="waiting-camera-btn" class="waiting-control-btn"><i class="fas fa-video"></i> <span>Camera</span></button>
+                    <button class="waiting-dropdown-toggle" id="waiting-camera-dropdown-btn"><i class="fas fa-chevron-down"></i></button>
+                    <div class="waiting-dropdown-menu" id="waiting-camera-menu" style="display: none;">
+                        <div class="dropdown-header">Camera</div>
+                        <div id="waiting-camera-list"></div>
+                    </div>
+                </div>
+                <div class="waiting-control-dropdown">
+                    <button id="waiting-mic-btn" class="waiting-control-btn"><i class="fas fa-microphone"></i> <span>Mic</span></button>
+                    <button class="waiting-dropdown-toggle" id="waiting-mic-dropdown-btn"><i class="fas fa-chevron-down"></i></button>
+                    <div class="waiting-dropdown-menu" id="waiting-mic-menu" style="display: none;">
+                        <div class="dropdown-header">Microphone</div>
+                        <div id="waiting-mic-list"></div>
+                        <hr style="margin: 8px 0; border: none; border-top: 1px solid #e1dfdd;">
+                        <div class="dropdown-header">Speaker</div>
+                        <div id="waiting-speaker-list"></div>
+                    </div>
+                </div>
+                <button class="waiting-control-btn"><i class="fas fa-desktop"></i> <span>Share</span></button>
+                <button class="waiting-leave-btn"><i class="fas fa-phone-slash"></i> <span>Leave</span></button>
+            </div>
+        </div>
+
+        <div class="waiting-content">
+            <div class="waiting-avatar">
+                <div class="avatar-circle" id="waiting-avatar">SB</div>
+            </div>
+            <h2 id="waiting-message">Waiting for others to join...</h2>
+
+            <!-- Admission notification for host -->
+            <div id="admission-notification" class="admission-notification" style="display: none;">
+                <div class="admission-card">
+                    <i class="fas fa-user-clock"></i>
+                    <p><strong id="waiting-guest-name">Guest</strong> is waiting in the lobby</p>
+                    <div class="admission-guest-info">
+                        <span id="waiting-guest-detail">stephanie (Guest)</span>
+                        <a href="#" class="more-info">More info</a>
+                    </div>
+                    <div class="admission-actions">
+                        <button id="deny-btn" class="admission-deny-btn">Deny</button>
+                        <button id="admit-btn" class="admission-admit-btn">Admit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 4: Main Meeting Interface -->
+    <div id="main-container" class="main-container" style="display: none;">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <img src="shield.svg" alt="Shield" style="width: 20px; height: 20px;">
+                <span id="meeting-timer">00:00</span>
+            </div>
+
+            <div class="top-bar-center">
+                <button id="chat-toggle-btn" class="top-btn"><img src="chat-black.svg" alt="Chat" style="width: 20px; height: 20px;"> <span>Chat</span></button>
+                <button class="top-btn"><img src="people-black.svg" alt="People" style="width: 20px; height: 20px;"> <span>People</span></button>
+                <button class="top-btn"><img src="raise-black.svg" alt="Raise" style="width: 20px; height: 20px;"> <span>Raise</span></button>
+                <button class="top-btn"><img src="react-black.svg" alt="React" style="width: 20px; height: 20px;"> <span>React</span></button>
+                <button class="top-btn"><img src="view-black.svg" alt="View" style="width: 20px; height: 20px;"> <span>View</span></button>
+                <button class="top-btn"><img src="more-black.svg" alt="More" style="width: 20px; height: 20px;"> <span>More</span></button>
+                <div class="top-bar-separator"></div>
+                <button id="main-camera-btn" class="top-btn active"><img src="video-on.svg" alt="Camera" style="width: 20px; height: 20px;"> <span>Camera</span></button>
+                <button id="main-mic-btn" class="top-btn active"><img src="mic-on.svg" alt="Mic" style="width: 20px; height: 20px;"> <span>Mic</span></button>
+                <button class="top-btn inactive"><img src="share.svg" alt="Share" style="width: 20px; height: 20px;"> <span>Share</span></button>
+                <button class="top-leave-btn"><img src="call-end-white.svg" alt="Leave" style="width: 20px; height: 20px;"> <span>Leave</span></button>
+            </div>
+
+            <div class="top-bar-right">
+            </div>
+        </div>
+
+        <!-- Content: Videos + Chat -->
+        <div class="meeting-content">
+            <!-- Video Grid -->
+            <div class="video-area">
+                <div id="video-grid" class="video-grid">
+                    <!-- Videos will be added dynamically -->
+                </div>
+
+                <!-- Admission Notification (for host in meeting) -->
+                <div id="meeting-admission-notification" class="meeting-admission-notification" style="display: none;">
+                    <div class="admission-card">
+                        <i class="fas fa-user-clock"></i>
+                        <p><strong id="meeting-guest-name">Guest</strong> is waiting in the lobby</p>
+                        <div class="admission-actions">
+                            <button id="meeting-deny-btn" class="admission-deny-btn">Deny</button>
+                            <button id="meeting-admit-btn" class="admission-admit-btn">Admit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Host Video Control Panel (only visible to host) -->
+            <div id="host-video-control" class="host-video-control" style="display: none;">
+                <div class="video-control-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h4 style="margin: 0;">Video Source Control</h4>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="showParticipantLinks()" title="Voir les liens participants" style="background: #6264a7; color: white; border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-size: 14px;">
+                            <i class="fas fa-link"></i>
+                        </button>
+                        <button id="btn-minimize-panel" onclick="toggleControlPanel()" title="Réduire" style="background: #d2d0ce; color: #252423; border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-size: 16px; font-weight: bold;">
+                            −
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Links Popup (hidden by default) -->
+                <div id="participant-links-popup" style="display: none; margin-top: 10px; padding: 12px; background: #f3f2f1; border-radius: 4px; border: 1px solid #d2d0ce;">
+                    <div style="font-weight: 600; margin-bottom: 8px;">Liens Participants:</div>
+                    <div style="margin-bottom: 8px;">
+                        <div id="label-participant1" style="font-size: 12px; color: #605e5c; margin-bottom: 4px;">Participant 1 (avec vidéos):</div>
+                        <div style="display: flex; gap: 4px;">
+                            <input type="text" id="link-participant1" readonly style="flex: 1; padding: 6px 8px; border: 1px solid #d2d0ce; border-radius: 4px; font-size: 12px; background: white;">
+                            <button onclick="copyLink(1)" style="background: #6264a7; color: white; border: none; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px;">Copier</button>
+                        </div>
+                    </div>
+                    <div>
+                        <div id="label-participant2" style="font-size: 12px; color: #605e5c; margin-bottom: 4px;">Participant 2 (sans vidéos):</div>
+                        <div style="display: flex; gap: 4px;">
+                            <input type="text" id="link-participant2" readonly style="flex: 1; padding: 6px 8px; border: 1px solid #d2d0ce; border-radius: 4px; font-size: 12px; background: white;">
+                            <button onclick="copyLink(2)" style="background: #6264a7; color: white; border: none; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px;">Copier</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="control-panel-content">
+                <div class="video-control-buttons">
+                    <button id="btn-webcam" class="video-control-btn active" onclick="switchHostVideo('webcam')">
+                        <i class="fas fa-video"></i>
+                        <span>Webcam</span>
+                    </button>
+                    <button id="btn-video1" class="video-control-btn" onclick="switchHostVideo('video1')">
+                        <i class="fas fa-play-circle"></i>
+                        <span>Video 1</span>
+                    </button>
+                    <button id="btn-video2" class="video-control-btn" onclick="switchHostVideo('video2')">
+                        <i class="fas fa-play-circle"></i>
+                        <span>Video 2</span>
+                    </button>
+                    <button id="btn-stop" class="video-control-btn" onclick="switchHostVideo('stop')">
+                        <i class="fas fa-stop-circle"></i>
+                        <span>Stop</span>
+                    </button>
+                </div>
+
+                <!-- Participant 3 / Fred Control Section -->
+                <div class="video-control-section" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #edebe9;">
+                    <div class="video-control-header" style="margin-bottom: 10px;">
+                        <h4>Slot 2 Control</h4>
+                    </div>
+
+                    <!-- Mode Toggle: Fred vs Participant 3 -->
+                    <div class="mode-toggle" style="display: flex; gap: 8px; margin-bottom: 12px;">
+                        <button id="btn-mode-fred" class="video-control-btn active" onclick="switchSlot2Mode('fred')" style="flex: 1;">
+                            <i class="fas fa-robot"></i>
+                            <span>Fred</span>
+                        </button>
+                        <button id="btn-mode-participant3" class="video-control-btn" onclick="switchSlot2Mode('participant3')" style="flex: 1;">
+                            <i class="fas fa-user"></i>
+                            <span>Participant 3</span>
+                        </button>
+                    </div>
+
+                    <!-- Name Input (for Participant 3 mode) -->
+                    <div id="participant3-name-input" style="display: none; margin-bottom: 12px;">
+                        <input type="text" id="participant3-name" placeholder="Nom (ex: Michel Dupont)"
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #d2d0ce; border-radius: 4px; font-size: 14px;"
+                               oninput="updateParticipant3Name()">
+                    </div>
+
+                    <!-- Video Controls (for Participant 3 mode) -->
+                    <div id="participant3-video-controls" class="video-control-buttons" style="display: none;">
+                        <button id="btn-p3-video1" class="video-control-btn" onclick="triggerP3VideoUpload(1)">
+                            <i class="fas fa-play-circle"></i>
+                            <span>Video 1</span>
+                        </button>
+                        <button id="btn-p3-video2" class="video-control-btn" onclick="triggerP3VideoUpload(2)">
+                            <i class="fas fa-play-circle"></i>
+                            <span>Video 2</span>
+                        </button>
+                        <button id="btn-p3-stop" class="video-control-btn active" onclick="switchParticipant3Video('stop')">
+                            <i class="fas fa-stop-circle"></i>
+                            <span>Stop</span>
+                        </button>
+                    </div>
+                    <!-- Hidden file inputs for Participant 3 videos -->
+                    <input type="file" id="p3-video-input-1" accept="video/mp4,video/webm,video/ogg" style="display: none;" onchange="handleP3VideoUpload(1, this)">
+                    <input type="file" id="p3-video-input-2" accept="video/mp4,video/webm,video/ogg" style="display: none;" onchange="handleP3VideoUpload(2, this)">
+                </div>
+                </div><!-- End control-panel-content -->
+            </div>
+
+            <!-- Meeting Chat (always visible) -->
+            <div id="meeting-chat-panel" class="meeting-chat-panel">
+                <div class="chat-header">
+                    <h3>Meeting chat</h3>
+                    <div class="chat-header-actions">
+                        <button id="close-chat-btn" class="chat-action-btn" title="Close chat"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                <div id="meeting-chat-messages" class="meeting-chat-messages">
+                    <!-- Sarah's initial message will be added here -->
+                </div>
+                <div class="chat-input-area">
+                    <div class="chat-input-container">
+                        <textarea id="meeting-chat-input" placeholder="Type a message"></textarea>
+                        <div class="chat-input-actions">
+                            <button class="chat-input-btn"><img src="emoji.svg" alt="Emoji"></button>
+                            <div class="chat-input-separator"></div>
+                            <button id="send-message-btn" class="chat-send-btn"><img src="send.svg" alt="Send"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
