@@ -409,7 +409,7 @@
         const baseUrl = window.location.origin;
         let uploadedVideos = { 1: null, 2: null };
         let uploadedVideosP2 = { 1: null, 2: null };
-        let uploadedVideosP3 = { 1: null, 2: null };
+        // uploadedVideosP3 removed - P3 is now a real participant
 
         // Handle P2 video uploads
         document.getElementById('video-input-p2-1').addEventListener('change', (e) => handleVideoUploadP2(e, 1));
@@ -441,35 +441,7 @@
             document.getElementById(`video-input-p2-${slot}`).value = '';
         }
 
-        // Handle P3 video uploads
-        document.getElementById('video-input-p3-1').addEventListener('change', (e) => handleVideoUploadP3(e, 1));
-        document.getElementById('video-input-p3-2').addEventListener('change', (e) => handleVideoUploadP3(e, 2));
-
-        function handleVideoUploadP3(event, slot) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            if (file.size > 500 * 1024 * 1024) {
-                alert('Fichier trop gros. Maximum 500MB.');
-                return;
-            }
-
-            uploadedVideosP3[slot] = file;
-
-            const videoURL = URL.createObjectURL(file);
-            document.getElementById(`video-player-p3-${slot}`).src = videoURL;
-            document.getElementById(`video-name-p3-${slot}`).textContent = file.name;
-            document.getElementById(`upload-box-p3-${slot}`).style.display = 'none';
-            document.getElementById(`preview-p3-${slot}`).classList.add('show');
-        }
-
-        function removeVideoP3(slot) {
-            uploadedVideosP3[slot] = null;
-            document.getElementById(`video-player-p3-${slot}`).src = '';
-            document.getElementById(`upload-box-p3-${slot}`).style.display = 'block';
-            document.getElementById(`preview-p3-${slot}`).classList.remove('show');
-            document.getElementById(`video-input-p3-${slot}`).value = '';
-        }
+        // P3 video upload handlers removed - P3 is now a real participant who loads their own videos
 
         // Generate participant link
         function generateLink(participantNum, hasVideos = false) {
@@ -582,15 +554,7 @@
                         console.log('Storing P2 Video 2');
                     }
 
-                    // Store Participant 3 videos (ID 5, 6)
-                    if (uploadedVideosP3[1]) {
-                        store.put({ id: 5, file: uploadedVideosP3[1], type: 'participant3' });
-                        console.log('Storing P3 Video 1');
-                    }
-                    if (uploadedVideosP3[2]) {
-                        store.put({ id: 6, file: uploadedVideosP3[2], type: 'participant3' });
-                        console.log('Storing P3 Video 2');
-                    }
+                    // P3 is now a real participant - they load their own videos
 
                     transaction.oncomplete = () => {
                         console.log('All videos stored in IndexedDB');
@@ -624,27 +588,11 @@
 
                 const hostFullName = `${hostFirstname} ${hostLastname}`;
 
-                // Get P3 name
-                const p3Firstname = document.getElementById('p3-firstname').value.trim();
-                const p3Lastname = document.getElementById('p3-lastname').value.trim();
-                const p3FullName = p3Firstname && p3Lastname ? `${p3Firstname} ${p3Lastname}` : '';
-
                 // Store host info
                 sessionStorage.setItem('isHost', 'true');
                 sessionStorage.setItem('userName', hostFullName);
 
-                // Store P3 info
-                if (p3FullName) {
-                    sessionStorage.setItem('participant3Name', p3FullName);
-                }
-
-                // Store P2 name (from Participant 1 field - the one with videos)
-                const p2Firstname = document.getElementById('firstname1').value.trim();
-                const p2Lastname = document.getElementById('lastname1').value.trim();
-                const p2FullName = p2Firstname && p2Lastname ? `${p2Firstname} ${p2Lastname}` : '';
-                if (p2FullName) {
-                    sessionStorage.setItem('participant2Name', p2FullName);
-                }
+                // P3 is now a real participant - no virtual P3 name needed
 
                 // Store videos in IndexedDB
                 await storeVideosInIndexedDB();
