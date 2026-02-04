@@ -8,7 +8,7 @@ const server = http.createServer(app);
 const io = socketIO(server);
 
 const PORT = process.env.PORT || 3000;
-const MAX_PARTICIPANTS = 4;
+const MAX_PARTICIPANTS = 5;
 
 // Serve static files
 app.use(express.static('public'));

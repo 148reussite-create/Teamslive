@@ -1971,15 +1971,19 @@ function showParticipantLinks() {
     const popup = document.getElementById('participant-links-popup');
     const link1Input = document.getElementById('link-participant1');
     const link2Input = document.getElementById('link-participant2');
+    const link3Input = document.getElementById('link-participant3');
     const label1 = document.getElementById('label-participant1');
     const label2 = document.getElementById('label-participant2');
+    const label3 = document.getElementById('label-participant3');
 
     if (popup.style.display === 'none') {
         // Retrieve stored links from sessionStorage
         const storedLink1 = sessionStorage.getItem('participantLink1');
         const storedLink2 = sessionStorage.getItem('participantLink2');
+        const storedLink3 = sessionStorage.getItem('participantLink3');
         const storedName1 = sessionStorage.getItem('participantName1');
         const storedName2 = sessionStorage.getItem('participantName2');
+        const storedName3 = sessionStorage.getItem('participantName3');
 
         // Use stored links or show message if not configured
         if (storedLink1) {
@@ -1996,6 +2000,16 @@ function showParticipantLinks() {
         } else {
             link2Input.value = 'Lien non configuré - retournez à host-setup';
             if (label2) label2.textContent = 'Participant 2 (non configuré)';
+        }
+
+        if (link3Input) {
+            if (storedLink3) {
+                link3Input.value = storedLink3;
+                if (label3) label3.textContent = storedName3 || 'Participant 3';
+            } else {
+                link3Input.value = 'Lien non configuré - retournez à host-setup';
+                if (label3) label3.textContent = 'Participant 3 (non configuré)';
+            }
         }
 
         popup.style.display = 'block';
