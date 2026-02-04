@@ -1554,7 +1554,7 @@ body {
 .host-video-control {
     position: absolute;
     bottom: 20px;
-    left: 20px;
+    left: 120px;
     background: white;
     border-radius: 8px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.15);

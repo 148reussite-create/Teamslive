@@ -148,6 +148,15 @@ function init() {
 
         // Load participant videos from IndexedDB
         loadVideosFromIndexedDB('participant');
+    } else {
+        // Regular participant (Client) - get name from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const nameFromUrl = urlParams.get('name');
+        if (nameFromUrl) {
+            userName = nameFromUrl;
+            userInitials = getInitials(userName);
+            console.log('Regular participant from URL:', userName);
+        }
     }
 
     // Start with splash screen
@@ -1909,6 +1918,8 @@ function addFredSlotParticipant(peerId, peerName, peerInitials, stream) {
         video.autoplay = true;
         video.playsInline = true;
         videoContainer.appendChild(video);
+        // Force play (in case autoplay is blocked)
+        video.play().catch(e => console.log('Fred slot video play error:', e));
     } else {
         // Show avatar with pink background (Fireflies style)
         const avatar = document.createElement('div');
@@ -1927,7 +1938,7 @@ function addFredSlotParticipant(peerId, peerName, peerInitials, stream) {
     // Add Fred welcome message
     addSarahInitialMessage();
 
-    console.log('Added Fred slot participant:', peerName);
+    console.log('Added Fred slot participant:', peerName, 'with stream:', !!stream);
 }
 
 // Update Fred slot participant video when stream changes
@@ -1938,6 +1949,8 @@ function updateFredSlotParticipantVideo(peerId, stream) {
     const participant = participants.get(peerId);
     if (!participant) return;
 
+    console.log('Updating Fred slot participant video, has stream:', !!stream);
+
     // Clear existing content except name tag
     const nameTag = videoContainer.querySelector('.video-name-tag');
     videoContainer.innerHTML = '';
@@ -1947,7 +1960,10 @@ function updateFredSlotParticipantVideo(peerId, stream) {
         video.srcObject = stream;
         video.autoplay = true;
         video.playsInline = true;
+        video.muted = false;
         videoContainer.appendChild(video);
+        // Force play (in case autoplay is blocked)
+        video.play().catch(e => console.log('Fred slot video play error:', e));
     } else {
         // Show avatar with pink background
         const avatar = document.createElement('div');
