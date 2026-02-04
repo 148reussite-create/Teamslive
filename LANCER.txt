@@ -1,0 +1,21 @@
+======================================
+  COMMANDES DE DÉMARRAGE
+======================================
+
+1. Ouvrir un terminal (CMD) et exécuter :
+
+   cd C:\Users\reuss\Desktop\reference
+   node server.js
+
+2. Ouvrir dans le navigateur :
+
+   HOST (organisateur) :
+   http://localhost:3000/host
+
+   PARTICIPANT :
+   http://localhost:3000/participant
+
+   MEETING :
+   http://localhost:3000/meeting
+
+======================================

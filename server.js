@@ -67,6 +67,7 @@ io.on('connection', (socket) => {
     console.log('=== JOIN REQUEST ===');
     console.log('From:', data.name);
     console.log('isHost flag:', data.isHost);
+    console.log('Role:', data.role || 'none');
     console.log('Socket ID:', socket.id);
     console.log('Current hostId:', hostId);
 
@@ -83,7 +84,8 @@ io.on('connection', (socket) => {
         id: socket.id,
         name: data.name,
         initials: data.initials,
-        isHost: true
+        isHost: true,
+        role: data.role || null
       });
 
       socket.emit('admitted');
@@ -94,7 +96,8 @@ io.on('connection', (socket) => {
         id: socket.id,
         name: data.name,
         initials: data.initials,
-        isHost: false
+        isHost: false,
+        role: data.role || null
       });
 
       socket.emit('waiting-for-admission');
@@ -106,7 +109,8 @@ io.on('connection', (socket) => {
         io.to(hostId).emit('participant-waiting', {
           id: socket.id,
           name: data.name,
-          initials: data.initials
+          initials: data.initials,
+          role: data.role || null
         });
         console.log('>>> participant-waiting event sent');
       } else {

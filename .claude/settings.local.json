@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(where:*)",
+      "Bash(node:*)",
+      "Bash(copy index.html participant.html)",
+      "Bash(ls:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(copy \"c:\\\\Users\\\\reuss\\\\Desktop\\\\reference\\\\Fireflies.ai_idjU1WbcfM_0.svg\" \"c:\\\\Users\\\\reuss\\\\Desktop\\\\reference\\\\public\\\\fireflies-logo.svg\")",
+      "Bash(copy:*)"
+    ]
+  }
+}

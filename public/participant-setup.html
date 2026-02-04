@@ -214,9 +214,10 @@
         let uploadedVideos = { 1: null, 2: null };
         let participantName = '';
 
-        // Get participant name from URL
+        // Get participant name and role from URL
         const urlParams = new URLSearchParams(window.location.search);
         participantName = urlParams.get('name') || 'Participant';
+        const participantRole = urlParams.get('role') || null;
         document.getElementById('participant-name-display').textContent = `Welcome ${participantName}! Upload your videos before joining`;
 
         // Handle video uploads
@@ -259,6 +260,11 @@
                 // Store participant info
                 sessionStorage.setItem('isParticipantWithVideos', 'true');
                 sessionStorage.setItem('userName', participantName);
+
+                // Store role if present (e.g., 'fred' for Fred slot)
+                if (participantRole) {
+                    sessionStorage.setItem('participantRole', participantRole);
+                }
 
                 // Store videos in IndexedDB
                 if (uploadedVideos[1] || uploadedVideos[2]) {

@@ -288,7 +288,7 @@
                     <button class="btn-small" onclick="copyLink(2)">Copy Link</button>
                 </div>
 
-                <!-- Participant 3 (with videos) -->
+                <!-- Participant 3 (Fred slot - pink background, sends Fred message) -->
                 <div class="participant-row" style="margin-top: 20px;">
                     <div class="input-group">
                         <label for="firstname3">First Name</label>
@@ -299,7 +299,7 @@
                         <input type="text" id="lastname3" placeholder="e.g., Dupont">
                     </div>
                 </div>
-                <button class="btn-small" onclick="generateLink(3, true)">Generate Link for Participant 3 (with videos)</button>
+                <button class="btn-small" onclick="generateLink(3, true, 'fred')">Generate Link for Participant 3 (Fred slot)</button>
                 <div class="generated-link" id="link3">
                     <div class="link-text" id="linktext3"></div>
                     <button class="btn-small" onclick="copyLink(3)">Copy Link</button>
@@ -444,7 +444,7 @@
         // P3 video upload handlers removed - P3 is now a real participant who loads their own videos
 
         // Generate participant link
-        function generateLink(participantNum, hasVideos = false) {
+        function generateLink(participantNum, hasVideos = false, role = null) {
             const firstname = document.getElementById(`firstname${participantNum}`).value.trim();
             const lastname = document.getElementById(`lastname${participantNum}`).value.trim();
 
@@ -459,6 +459,11 @@
             // Add hasVideos parameter if participant can upload videos
             if (hasVideos) {
                 link += `&hasVideos=true`;
+            }
+
+            // Add role parameter (e.g., 'fred' for Fred slot)
+            if (role) {
+                link += `&role=${role}`;
             }
 
             document.getElementById(`linktext${participantNum}`).textContent = link;

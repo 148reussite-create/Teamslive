@@ -56,6 +56,7 @@ let p2Initials = 'P2';
 // Participant with videos control
 let isParticipantWithVideos = false;
 let participantVideoMode = 'webcam';
+let participantRole = null; // 'fred' for Fred slot replacement
 let participantVideo1URL = null;
 let participantVideo2URL = null;
 let participantVideo1Element = null;
@@ -141,6 +142,9 @@ function init() {
         isParticipantWithVideos = true;
         userName = sessionStorage.getItem('userName') || 'Participant';
         userInitials = getInitials(userName);
+        participantRole = sessionStorage.getItem('participantRole') || null;
+
+        console.log('Participant role:', participantRole);
 
         // Load participant videos from IndexedDB
         loadVideosFromIndexedDB('participant');
@@ -362,7 +366,8 @@ function joinWaitingRoom() {
     socket.emit('join-request', {
         name: userName,
         initials: userInitials,
-        isHost: false
+        isHost: false,
+        role: participantRole
     });
 }
 
@@ -1019,7 +1024,14 @@ function setupSocketEvents() {
 
         existingParticipants.forEach(participant => {
             participants.set(participant.id, participant);
-            addRemoteVideo(participant.id, participant.name, participant.initials, null);
+
+            // Check if this participant has role=fred
+            if (participant.role === 'fred') {
+                console.log('Existing Fred slot participant:', participant.name);
+                addFredSlotParticipant(participant.id, participant.name, participant.initials, null);
+            } else {
+                addRemoteVideo(participant.id, participant.name, participant.initials, null);
+            }
 
             // Initiate WebRTC connection
             createPeerConnection(participant.id, true);
@@ -1031,7 +1043,13 @@ function setupSocketEvents() {
         participants.set(data.id, data);
 
         if (currentScreen === 'meeting') {
-            addRemoteVideo(data.id, data.name, data.initials, null);
+            // Check if this participant has role=fred
+            if (data.role === 'fred') {
+                console.log('Fred slot participant joined:', data.name);
+                addFredSlotParticipant(data.id, data.name, data.initials, null);
+            } else {
+                addRemoteVideo(data.id, data.name, data.initials, null);
+            }
 
             // Don't create peer connection here - wait for their offer
             // The new user will send us an offer, and we'll create the peer in the offer handler
@@ -1174,7 +1192,12 @@ async function createPeerConnection(peerId, isInitiator) {
         const participant = participants.get(peerId);
         if (participant) {
             console.log(`Updating video display for ${participant.name} with stream`);
-            addRemoteVideo(peerId, participant.name, participant.initials, stream);
+            // Check if this participant has role=fred
+            if (participant.role === 'fred') {
+                updateFredSlotParticipantVideo(peerId, stream);
+            } else {
+                addRemoteVideo(peerId, participant.name, participant.initials, stream);
+            }
         }
     };
 
@@ -1867,6 +1890,76 @@ function addFredParticipant() {
     videoContainer.appendChild(nameTag);
 
     videoGrid.appendChild(videoContainer);
+}
+
+// Add a real participant in the Fred slot (pink background)
+function addFredSlotParticipant(peerId, peerName, peerInitials, stream) {
+    // Remove existing Fred/Slot2 display
+    const existingFred = document.getElementById('video-sarah');
+    if (existingFred) existingFred.remove();
+
+    const videoContainer = document.createElement('div');
+    videoContainer.className = 'video-container';
+    videoContainer.id = 'video-sarah'; // Use Fred slot ID
+    videoContainer.dataset.peerId = peerId; // Store peer ID for stream updates
+
+    if (stream) {
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.autoplay = true;
+        video.playsInline = true;
+        videoContainer.appendChild(video);
+    } else {
+        // Show avatar with pink background (Fireflies style)
+        const avatar = document.createElement('div');
+        avatar.className = 'video-avatar video-avatar-fireflies';
+        avatar.innerHTML = `
+            <div class="video-avatar-circle" style="background: #5b2c6f; color: white;">${peerInitials}</div>
+        `;
+        videoContainer.appendChild(avatar);
+    }
+
+    const nameTag = createNameTag(peerName, true, false, false);
+    videoContainer.appendChild(nameTag);
+
+    videoGrid.appendChild(videoContainer);
+
+    // Add Fred welcome message
+    addSarahInitialMessage();
+
+    console.log('Added Fred slot participant:', peerName);
+}
+
+// Update Fred slot participant video when stream changes
+function updateFredSlotParticipantVideo(peerId, stream) {
+    const videoContainer = document.getElementById('video-sarah');
+    if (!videoContainer || videoContainer.dataset.peerId !== peerId) return;
+
+    const participant = participants.get(peerId);
+    if (!participant) return;
+
+    // Clear existing content except name tag
+    const nameTag = videoContainer.querySelector('.video-name-tag');
+    videoContainer.innerHTML = '';
+
+    if (stream) {
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.autoplay = true;
+        video.playsInline = true;
+        videoContainer.appendChild(video);
+    } else {
+        // Show avatar with pink background
+        const avatar = document.createElement('div');
+        avatar.className = 'video-avatar video-avatar-fireflies';
+        avatar.innerHTML = `
+            <div class="video-avatar-circle" style="background: #5b2c6f; color: white;">${participant.initials}</div>
+        `;
+        videoContainer.appendChild(avatar);
+    }
+
+    if (nameTag) videoContainer.appendChild(nameTag);
+    videoContainer.dataset.peerId = peerId;
 }
 
 function addParticipant3Display() {
