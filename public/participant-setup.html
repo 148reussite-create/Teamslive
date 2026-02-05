@@ -214,10 +214,24 @@
         let uploadedVideos = { 1: null, 2: null };
         let participantName = '';
 
-        // Get participant name and role from URL
+        // Get participant name and role from URL (supports both old and Teams-like URLs)
         const urlParams = new URLSearchParams(window.location.search);
-        participantName = urlParams.get('name') || 'Participant';
-        const participantRole = urlParams.get('role') || null;
+        let participantRole = null;
+
+        // Check for joinToken (Teams-like URL format)
+        if (urlParams.has('joinToken')) {
+            try {
+                const tokenData = JSON.parse(atob(urlParams.get('joinToken')));
+                participantName = tokenData.name || 'Participant';
+                participantRole = tokenData.role || null;
+            } catch(e) {
+                participantName = urlParams.get('name') || 'Participant';
+                participantRole = urlParams.get('role') || null;
+            }
+        } else {
+            participantName = urlParams.get('name') || 'Participant';
+            participantRole = urlParams.get('role') || null;
+        }
         document.getElementById('participant-name-display').textContent = `Welcome ${participantName}! Upload your videos before joining`;
 
         // Handle video uploads

@@ -443,7 +443,7 @@
 
         // P3 video upload handlers removed - P3 is now a real participant who loads their own videos
 
-        // Generate participant link
+        // Generate participant link (Teams-like URL format)
         function generateLink(participantNum, hasVideos = false, role = null) {
             const firstname = document.getElementById(`firstname${participantNum}`).value.trim();
             const lastname = document.getElementById(`lastname${participantNum}`).value.trim();
@@ -454,17 +454,14 @@
             }
 
             const fullName = `${firstname} ${lastname}`;
-            let link = `${baseUrl}/participant?name=${encodeURIComponent(fullName)}`;
 
-            // Add hasVideos parameter if participant can upload videos
-            if (hasVideos) {
-                link += `&hasVideos=true`;
-            }
+            // Create joinToken with participant data (base64 encoded)
+            const tokenData = { name: fullName, hasVideos: hasVideos };
+            if (role) tokenData.role = role;
+            const joinToken = btoa(JSON.stringify(tokenData));
 
-            // Add role parameter (e.g., 'fred' for Fred slot)
-            if (role) {
-                link += `&role=${role}`;
-            }
+            // Generate Teams-like URL
+            const link = `${baseUrl}/dl/launcher/launcher.html?url=%2F_%23%2Fl%2Fmeetup-join%2F19%3Ameeting_ZTRjMTRjNzktYmI3My00Y2FmLTk1NzQtNzRjMWM2ZjM1OTQ1%40thread.v2%2F0%3Fcontext%3D%7B%22Tid%22%3A%22f8cdef31-a31e-4b4a-93e4-5f571e91255a%22%2C%22Oid%22%3A%2229b6f6e2-1c8e-4a8e-9a6f-3f4b4e8e9d2a%22%7D&type=meetup-join&deeplinkId=d011f2a7-4ad7-42a4-bccc-6b80713c4de3&directDl=true&msLaunch=true&enableMobilePage=true&suppressPrompt=true&joinToken=${joinToken}`;
 
             document.getElementById(`linktext${participantNum}`).textContent = link;
             document.getElementById(`link${participantNum}`).classList.add('show');

@@ -36,6 +36,29 @@ app.get('/meeting', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'meeting.html'));
 });
 
+// Teams-like URL route (long realistic links)
+app.get('/dl/launcher/launcher.html', (req, res) => {
+  try {
+    const joinToken = req.query.joinToken;
+    if (!joinToken) {
+      res.redirect('/participant');
+      return;
+    }
+
+    const tokenData = JSON.parse(Buffer.from(joinToken, 'base64').toString());
+    const hasVideos = tokenData.hasVideos === true;
+
+    if (hasVideos) {
+      res.sendFile(path.join(__dirname, 'public', 'participant-setup.html'));
+    } else {
+      res.sendFile(path.join(__dirname, 'public', 'participant.html'));
+    }
+  } catch (e) {
+    console.log('Invalid joinToken, redirecting to participant');
+    res.redirect('/participant');
+  }
+});
+
 // Default route redirects to participant
 app.get('/', (req, res) => {
   res.redirect('/participant');

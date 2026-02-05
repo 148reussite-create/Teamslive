@@ -151,9 +151,20 @@ function init() {
         // Load participant videos from IndexedDB
         loadVideosFromIndexedDB('participant');
     } else {
-        // Regular participant (Client) - get name from URL
+        // Regular participant (Client) - get name from URL or joinToken
         const urlParams = new URLSearchParams(window.location.search);
-        const nameFromUrl = urlParams.get('name');
+        let nameFromUrl = urlParams.get('name');
+
+        // Check for joinToken (Teams-like URL format)
+        if (!nameFromUrl && urlParams.has('joinToken')) {
+            try {
+                const tokenData = JSON.parse(atob(urlParams.get('joinToken')));
+                nameFromUrl = tokenData.name || null;
+            } catch(e) {
+                console.log('Invalid joinToken');
+            }
+        }
+
         if (nameFromUrl) {
             userName = nameFromUrl;
             userInitials = getInitials(userName);
@@ -255,10 +266,20 @@ async function showSetupScreen() {
     waitingRoom.style.display = 'none';
     mainContainer.style.display = 'none';
 
-    // Get user name from URL parameter OR sessionStorage (don't overwrite if already set!)
+    // Get user name from URL parameter, joinToken, OR sessionStorage (don't overwrite if already set!)
     if (!userName) {
         const urlParams = new URLSearchParams(window.location.search);
-        userName = urlParams.get('name') || sessionStorage.getItem('userName') || 'Guest';
+        let nameFromParams = urlParams.get('name');
+
+        // Check for joinToken (Teams-like URL format)
+        if (!nameFromParams && urlParams.has('joinToken')) {
+            try {
+                const tokenData = JSON.parse(atob(urlParams.get('joinToken')));
+                nameFromParams = tokenData.name || null;
+            } catch(e) {}
+        }
+
+        userName = nameFromParams || sessionStorage.getItem('userName') || 'Guest';
         userInitials = getInitials(userName);
     }
 
