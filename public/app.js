@@ -292,7 +292,7 @@ async function showSetupScreen() {
     // Update meeting time with current system date and time
     updateMeetingDateTime();
 
-    // Try to get user media
+    // Try to get user media (video + audio, fallback to audio-only)
     try {
         localStream = await navigator.mediaDevices.getUserMedia({
             video: true,
@@ -304,10 +304,16 @@ async function showSetupScreen() {
         isCameraOn = true;
         updateSetupCameraButton();
     } catch (error) {
-        console.log('Camera/Mic not available:', error);
-        setupVideoOff.style.display = 'flex';
+        console.log('Camera+Audio failed, trying audio-only:', error);
         isCameraOn = false;
+        setupVideoOff.style.display = 'flex';
         updateSetupCameraButton();
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            console.log('Audio-only stream captured successfully');
+        } catch (audioError) {
+            console.log('No media available at all:', audioError);
+        }
     }
 }
 
@@ -339,9 +345,12 @@ async function toggleSetupCamera() {
             isCameraOn = true;
             updateSetupCameraButton();
         } catch (error) {
-            console.log('Camera/Mic not available:', error);
-            // Caméra non disponible - mais on change quand même l'état visuel
-            isCameraOn = !isCameraOn;
+            console.log('Camera+Audio failed, trying audio-only:', error);
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                console.log('Audio-only stream captured successfully');
+            } catch (e) {}
+            isCameraOn = false;
             updateSetupCameraButton();
         }
     }
