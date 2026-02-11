@@ -752,9 +752,21 @@ function addLocalVideo() {
 }
 
 function addRemoteVideo(peerId, peerName, peerInitials, stream) {
-    // Remove if already exists
     const existing = document.getElementById(`video-${peerId}`);
-    if (existing) existing.remove();
+
+    // If container already exists and has a video element with a stream, just update it
+    if (existing && stream) {
+        const existingVideo = existing.querySelector('video');
+        if (existingVideo && existingVideo.srcObject) {
+            // Stream already set, no need to recreate
+            return;
+        }
+        // Container exists but has avatar (no stream yet) - replace with video
+        existing.remove();
+    } else if (existing && !stream) {
+        // Already showing avatar, skip
+        return;
+    }
 
     const videoContainer = document.createElement('div');
     videoContainer.className = 'video-container';
@@ -766,6 +778,8 @@ function addRemoteVideo(peerId, peerName, peerInitials, stream) {
         video.autoplay = true;
         video.playsInline = true;
         videoContainer.appendChild(video);
+        // Ensure playback starts (some browsers need explicit play)
+        video.play().catch(e => console.log('Remote video play error:', e));
     } else {
         // Show avatar with initials
         const avatar = document.createElement('div');
