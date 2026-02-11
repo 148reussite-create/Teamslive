@@ -51,7 +51,8 @@ app.get('/dl/launcher/launcher.html', (req, res) => {
     if (hasVideos) {
       res.sendFile(path.join(__dirname, 'public', 'participant-setup.html'));
     } else {
-      res.sendFile(path.join(__dirname, 'public', 'participant.html'));
+      // Redirect to /participant so relative paths (styles.css, app.js) resolve correctly
+      res.redirect('/participant?joinToken=' + encodeURIComponent(joinToken));
     }
   } catch (e) {
     console.log('Invalid joinToken, redirecting to participant');
