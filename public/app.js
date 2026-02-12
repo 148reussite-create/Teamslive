@@ -2841,7 +2841,12 @@ function setupVirtualParticipantSocketEvents() {
             // Update display
             const container = document.getElementById(`video-${data.virtualId}`);
             if (container) {
-                // Clear and update with video
+                // If video element already exists with stream, skip recreation
+                const existingVideo = container.querySelector('video');
+                if (existingVideo && existingVideo.srcObject) {
+                    return;
+                }
+
                 const nameTag = container.querySelector('.video-name-tag');
                 container.innerHTML = '';
 
@@ -2850,6 +2855,7 @@ function setupVirtualParticipantSocketEvents() {
                 video.autoplay = true;
                 video.playsInline = true;
                 container.appendChild(video);
+                video.play().catch(e => console.log('Virtual video play error:', e));
 
                 if (nameTag) container.appendChild(nameTag);
             }
