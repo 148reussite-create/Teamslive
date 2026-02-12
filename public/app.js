@@ -1145,35 +1145,13 @@ function setupSocketEvents() {
             // The new user will send us an offer, and we'll create the peer in the offer handler
             console.log(`⚪ Not creating peer for ${data.id} - waiting for their offer`);
 
-            // If host, broadcast current state and create virtual peers for new participant
+            // If host, broadcast current slot2 state to new participant
             if (isHost) {
                 setTimeout(() => {
                     broadcastSlot2State();
 
-                    // Re-emit virtual-participant-joined for each registered virtual participant
-                    // so the new client knows about them (they missed the original broadcast)
-                    for (const [virtualId, vp] of virtualPeers.entries()) {
-                        socket.emit('register-virtual-participant', {
-                            virtualId: virtualId,
-                            name: vp.name,
-                            initials: vp.initials
-                        });
-                    }
-
                     // Create virtual peer connections for the new participant
-                    setTimeout(() => {
-                        createVirtualPeersForNewParticipant(data.id);
-
-                        // Send current video mode for each virtual participant
-                        setTimeout(() => {
-                            if (p2VideoMode !== 'stop') {
-                                socket.emit('virtual-video-update', {
-                                    virtualId: 'virtual-p2',
-                                    videoMode: p2VideoMode
-                                });
-                            }
-                        }, 1000);
-                    }, 500);
+                    createVirtualPeersForNewParticipant(data.id);
                 }, 500); // Small delay to ensure connection is ready
             }
         }
@@ -2696,18 +2674,9 @@ async function getVirtualParticipantStream(virtualId) {
                 });
             }
 
-            // Try unmuted first (works when called from user gesture like button click)
-            videoElement.muted = false;
-            try {
-                await videoElement.play();
-            } catch (playErr) {
-                // Unmuted play failed (no user gesture context) - fall back to muted
-                console.log('Unmuted play failed, using muted:', playErr.message);
-                videoElement.muted = true;
-                await videoElement.play();
-            }
+            await videoElement.play();
             const stream = videoElement.captureStream ? videoElement.captureStream() : videoElement.mozCaptureStream();
-            console.log(`Got stream for ${virtualId}: ${stream.getTracks().length} tracks, muted: ${videoElement.muted}`);
+            console.log(`Got stream for ${virtualId}: ${stream.getTracks().length} tracks`);
             return stream;
         } catch (error) {
             console.error(`Error getting stream for ${virtualId}:`, error);
