@@ -1126,6 +1126,11 @@ function setupSocketEvents() {
         window.location.reload();
     });
 
+    // Host reset - redirect everyone to Teams
+    socket.on('force-redirect', () => {
+        window.location.href = 'https://teams.live.com/free';
+    });
+
     socket.on('existing-participants', (existingParticipants) => {
         // When entering meeting, get list of existing participants
         console.log('Existing participants:', existingParticipants);
@@ -3239,48 +3244,3 @@ function switchMyVideo(mode) {
     switchHostVideo(mode);
 }
 
-// ============================================
-// DEBUG OVERLAY (temporary - remove after fixing)
-// ============================================
-(function() {
-    const dbg = document.createElement('div');
-    dbg.id = 'debug-overlay';
-    dbg.style.cssText = 'position:fixed;bottom:5px;left:5px;background:rgba(0,0,0,0.85);color:#0f0;font:11px monospace;padding:8px 12px;border-radius:6px;z-index:99999;max-width:350px;pointer-events:none;';
-    document.body.appendChild(dbg);
-
-    function update() {
-        const lines = [];
-        lines.push('v7 | Socket: ' + (socket.connected ? 'OK (' + socket.id + ')' : 'DISCONNECTED'));
-        lines.push('Media: ' + (localStream ? localStream.getTracks().map(t => t.kind + '=' + (t.enabled ? 'on' : 'off')).join(', ') : 'NONE'));
-        lines.push('Screen: ' + currentScreen + ' | Host: ' + isHost);
-
-        const peerList = [];
-        for (const [id, peer] of peers.entries()) {
-            peerList.push(id.substring(0, 6) + ':' + (peer.iceConnectionState || '?'));
-        }
-        lines.push('Peers(' + peers.size + '): ' + (peerList.length ? peerList.join(', ') : 'none'));
-
-        const vpList = [];
-        if (typeof virtualPeers !== 'undefined') {
-            for (const [vid, vp] of virtualPeers.entries()) {
-                let peerStates = [];
-                if (vp.peerConnections) {
-                    for (const [pid, pc] of vp.peerConnections.entries()) {
-                        peerStates.push(pid.substring(0,4) + ':' + (pc.iceConnectionState || '?'));
-                    }
-                }
-                vpList.push(vid.replace('virtual-','') + '(' + peerStates.join(',') + ')');
-            }
-        }
-        if (vpList.length) lines.push('VPeers: ' + vpList.join(' | '));
-
-        // P2 video info (host only)
-        if (typeof p2Video1Element !== 'undefined' && p2Video1Element) {
-            lines.push('P2vid: mode=' + p2VideoMode + ' muted=' + p2Video1Element.muted + ' vol=' + p2Video1Element.volume.toFixed(1) + ' playing=' + !p2Video1Element.paused);
-        }
-
-        dbg.innerHTML = lines.join('<br>');
-        requestAnimationFrame(update);
-    }
-    update();
-})();

@@ -75,10 +75,15 @@ app.get('/', (req, res) => {
 app.get('/reset', (req, res) => {
   console.log('=== MANUAL RESET TRIGGERED ===');
 
-  // Disconnect all sockets
-  io.sockets.sockets.forEach((socket) => {
-    socket.disconnect(true);
-  });
+  // Redirect all participants to Teams, then disconnect
+  io.emit('force-redirect');
+
+  // Small delay to let the redirect message arrive before disconnecting
+  setTimeout(() => {
+    io.sockets.sockets.forEach((socket) => {
+      socket.disconnect(true);
+    });
+  }, 500);
 
   // Clear all state
   participants.clear();
