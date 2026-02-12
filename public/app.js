@@ -1900,6 +1900,13 @@ function switchParticipant3Video(mode) {
     if (!isHost) return;
 
     console.log('Switching Participant 3 video to:', mode);
+
+    // Mute/pause previous video element when stopping
+    if (mode === 'stop') {
+        if (p3Video1Element) { p3Video1Element.muted = true; p3Video1Element.pause(); }
+        if (p3Video2Element) { p3Video2Element.muted = true; p3Video2Element.pause(); }
+    }
+
     participant3VideoMode = mode;
 
     // Update button states
@@ -2793,6 +2800,13 @@ async function switchP2Video(mode) {
     if (!isHost) return;
 
     console.log('Switching P2 video to:', mode);
+
+    // Mute/pause previous video element when stopping
+    if (mode === 'stop') {
+        if (p2Video1Element) { p2Video1Element.muted = true; p2Video1Element.pause(); }
+        if (p2Video2Element) { p2Video2Element.muted = true; p2Video2Element.pause(); }
+    }
+
     p2VideoMode = mode;
 
     // Update button states
@@ -3037,16 +3051,22 @@ function setupVirtualParticipantSocketEvents() {
         const audioEl = container.querySelector('audio');
 
         if (data.videoMode === 'stop') {
-            // Show avatar, preserve audio
+            // Show avatar, stop audio
             const name = nameTag ? nameTag.querySelector('span').textContent : 'P';
             const initials = getInitials(name);
+
+            // Stop and remove audio element
+            if (audioEl) {
+                audioEl.pause();
+                audioEl.srcObject = null;
+                audioEl.remove();
+            }
 
             container.innerHTML = '';
             const avatar = document.createElement('div');
             avatar.className = 'video-avatar';
             avatar.innerHTML = `<div class="video-avatar-circle">${initials}</div>`;
             container.appendChild(avatar);
-            if (audioEl) container.appendChild(audioEl);
             if (nameTag) container.appendChild(nameTag);
         } else {
             // Video mode (video1 or video2) - show video from stream
