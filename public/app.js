@@ -1145,13 +1145,35 @@ function setupSocketEvents() {
             // The new user will send us an offer, and we'll create the peer in the offer handler
             console.log(`⚪ Not creating peer for ${data.id} - waiting for their offer`);
 
-            // If host, broadcast current slot2 state to new participant
+            // If host, broadcast current state and create virtual peers for new participant
             if (isHost) {
                 setTimeout(() => {
                     broadcastSlot2State();
 
+                    // Re-emit virtual-participant-joined for each registered virtual participant
+                    // so the new client knows about them (they missed the original broadcast)
+                    for (const [virtualId, vp] of virtualPeers.entries()) {
+                        socket.emit('register-virtual-participant', {
+                            virtualId: virtualId,
+                            name: vp.name,
+                            initials: vp.initials
+                        });
+                    }
+
                     // Create virtual peer connections for the new participant
-                    createVirtualPeersForNewParticipant(data.id);
+                    setTimeout(() => {
+                        createVirtualPeersForNewParticipant(data.id);
+
+                        // Send current video mode for each virtual participant
+                        setTimeout(() => {
+                            if (p2VideoMode !== 'stop') {
+                                socket.emit('virtual-video-update', {
+                                    virtualId: 'virtual-p2',
+                                    videoMode: p2VideoMode
+                                });
+                            }
+                        }, 1000);
+                    }, 500);
                 }, 500); // Small delay to ensure connection is ready
             }
         }
