@@ -1145,13 +1145,35 @@ function setupSocketEvents() {
             // The new user will send us an offer, and we'll create the peer in the offer handler
             console.log(`⚪ Not creating peer for ${data.id} - waiting for their offer`);
 
-            // If host, broadcast current slot2 state to new participant
+            // If host, broadcast current state and create virtual peers for new participant
             if (isHost) {
                 setTimeout(() => {
                     broadcastSlot2State();
 
+                    // Re-emit virtual-participant-joined for each registered virtual participant
+                    // so the new client knows about them (they missed the original broadcast)
+                    for (const [virtualId, vp] of virtualPeers.entries()) {
+                        socket.emit('register-virtual-participant', {
+                            virtualId: virtualId,
+                            name: vp.name,
+                            initials: vp.initials
+                        });
+                    }
+
                     // Create virtual peer connections for the new participant
-                    createVirtualPeersForNewParticipant(data.id);
+                    setTimeout(() => {
+                        createVirtualPeersForNewParticipant(data.id);
+
+                        // Send current video mode for each virtual participant
+                        setTimeout(() => {
+                            if (p2VideoMode !== 'stop') {
+                                socket.emit('virtual-video-update', {
+                                    virtualId: 'virtual-p2',
+                                    videoMode: p2VideoMode
+                                });
+                            }
+                        }, 1000);
+                    }, 500);
                 }, 500); // Small delay to ensure connection is ready
             }
         }
@@ -3002,23 +3024,46 @@ function setupVirtualParticipantSocketEvents() {
 
         console.log('Virtual video update:', data);
 
-        // Update display based on video mode
         const container = document.getElementById(`video-${data.virtualId}`);
-        if (container) {
-            if (data.videoMode === 'stop') {
-                // Show avatar
-                const nameTag = container.querySelector('.video-name-tag');
-                const name = nameTag ? nameTag.querySelector('span').textContent : 'P';
-                const initials = getInitials(name);
+        if (!container) return;
 
+        const nameTag = container.querySelector('.video-name-tag');
+        const audioEl = container.querySelector('audio');
+
+        if (data.videoMode === 'stop') {
+            // Show avatar, preserve audio
+            const name = nameTag ? nameTag.querySelector('span').textContent : 'P';
+            const initials = getInitials(name);
+
+            container.innerHTML = '';
+            const avatar = document.createElement('div');
+            avatar.className = 'video-avatar';
+            avatar.innerHTML = `<div class="video-avatar-circle">${initials}</div>`;
+            container.appendChild(avatar);
+            if (audioEl) container.appendChild(audioEl);
+            if (nameTag) container.appendChild(nameTag);
+        } else {
+            // Video mode (video1 or video2) - show video from stream
+            const stream = virtualStreams.get(data.virtualId);
+            if (stream) {
                 container.innerHTML = '';
-                const avatar = document.createElement('div');
-                avatar.className = 'video-avatar';
-                avatar.innerHTML = `<div class="video-avatar-circle">${initials}</div>`;
-                container.appendChild(avatar);
+
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                video.autoplay = true;
+                video.playsInline = true;
+                container.appendChild(video);
+
+                const audio = document.createElement('audio');
+                audio.srcObject = stream;
+                audio.autoplay = true;
+                container.appendChild(audio);
+
                 if (nameTag) container.appendChild(nameTag);
+
+                video.play().catch(e => console.log('Virtual video play:', e));
+                audio.play().catch(e => console.log('Virtual audio play:', e));
             }
-            // Video mode will be handled by incoming stream
         }
     });
 }
