@@ -1339,7 +1339,11 @@ async function createPeerConnection(peerId, isInitiator) {
             console.log(`Added ${track.kind} track to peer ${peerId}`);
         });
     } else {
-        console.warn(`⚠️ WARNING: No local stream available for peer ${peerId}! Video will not be shared.`);
+        console.warn(`⚠️ WARNING: No local stream available for peer ${peerId}! Adding transceivers to receive media.`);
+        // Even without local media, we need transceivers so the SDP offer
+        // includes audio/video sections and the remote peer sends us their tracks
+        peer.addTransceiver('audio', { direction: 'recvonly' });
+        peer.addTransceiver('video', { direction: 'recvonly' });
     }
 
     // Handle remote stream
