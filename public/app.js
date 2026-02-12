@@ -2696,6 +2696,8 @@ async function getVirtualParticipantStream(virtualId) {
                 });
             }
 
+            // Unmute before capture - captureStream() captures muted output as silent
+            videoElement.muted = false;
             await videoElement.play();
             const stream = videoElement.captureStream ? videoElement.captureStream() : videoElement.mozCaptureStream();
             console.log(`Got stream for ${virtualId}: ${stream.getTracks().length} tracks`);
