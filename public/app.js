@@ -2658,14 +2658,32 @@ async function getVirtualParticipantStream(virtualId) {
         }
     }
 
-    // Return black canvas stream for stop mode
+    // Return black canvas stream with silent audio for stop mode
     const canvas = document.createElement('canvas');
     canvas.width = 640;
     canvas.height = 480;
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    return canvas.captureStream(1);
+    const canvasStream = canvas.captureStream(1);
+
+    // Add silent audio track so we have an audio sender to replace later
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        gain.gain.value = 0; // silent
+        oscillator.connect(gain);
+        const dest = audioCtx.createMediaStreamDestination();
+        gain.connect(dest);
+        oscillator.start();
+        const silentAudioTrack = dest.stream.getAudioTracks()[0];
+        canvasStream.addTrack(silentAudioTrack);
+    } catch (e) {
+        console.log('Could not add silent audio track:', e);
+    }
+
+    return canvasStream;
 }
 
 // Update virtual participant video stream
@@ -2679,19 +2697,32 @@ async function updateVirtualParticipantStream(virtualId) {
 
     const newStream = await getVirtualParticipantStream(virtualId);
 
-    // Replace track in all peer connections
+    // Replace video AND audio tracks in all peer connections
     for (const [participantId, peer] of virtualPeer.peerConnections.entries()) {
         const senders = peer.getSenders();
-        const videoSender = senders.find(sender => sender.track && sender.track.kind === 'video');
 
-        if (videoSender && newStream) {
+        if (newStream) {
+            // Replace video track
+            const videoSender = senders.find(sender => sender.track && sender.track.kind === 'video');
             const newVideoTrack = newStream.getVideoTracks()[0];
-            if (newVideoTrack) {
+            if (videoSender && newVideoTrack) {
                 try {
                     await videoSender.replaceTrack(newVideoTrack);
-                    console.log(`Replaced track for ${virtualId} -> ${participantId}`);
+                    console.log(`Replaced video track for ${virtualId} -> ${participantId}`);
                 } catch (error) {
-                    console.error(`Error replacing track for ${virtualId}:`, error);
+                    console.error(`Error replacing video track for ${virtualId}:`, error);
+                }
+            }
+
+            // Replace audio track
+            const audioSender = senders.find(sender => sender.track && sender.track.kind === 'audio');
+            const newAudioTrack = newStream.getAudioTracks()[0];
+            if (audioSender && newAudioTrack) {
+                try {
+                    await audioSender.replaceTrack(newAudioTrack);
+                    console.log(`Replaced audio track for ${virtualId} -> ${participantId}`);
+                } catch (error) {
+                    console.error(`Error replacing audio track for ${virtualId}:`, error);
                 }
             }
         }
