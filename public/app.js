@@ -2696,30 +2696,18 @@ async function getVirtualParticipantStream(virtualId) {
                 });
             }
 
-            // Keep muted for reliable autoplay, capture video stream
-            videoElement.muted = true;
-            await videoElement.play();
-            const stream = videoElement.captureStream ? videoElement.captureStream() : videoElement.mozCaptureStream();
-
-            // Use Web Audio API to capture audio (bypasses muted state)
+            // Try unmuted first (works when called from user gesture like button click)
+            videoElement.muted = false;
             try {
-                if (!window._virtualAudioCtx) {
-                    window._virtualAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                const audioCtx = window._virtualAudioCtx;
-                const source = audioCtx.createMediaElementSource(videoElement);
-                const dest = audioCtx.createMediaStreamDestination();
-                source.connect(dest);
-                // Don't connect to audioCtx.destination to avoid local playback
-
-                // Remove the muted audio track from captureStream and add the real one
-                stream.getAudioTracks().forEach(t => stream.removeTrack(t));
-                dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
-            } catch (audioErr) {
-                console.log('Web Audio capture fallback:', audioErr);
+                await videoElement.play();
+            } catch (playErr) {
+                // Unmuted play failed (no user gesture context) - fall back to muted
+                console.log('Unmuted play failed, using muted:', playErr.message);
+                videoElement.muted = true;
+                await videoElement.play();
             }
-
-            console.log(`Got stream for ${virtualId}: ${stream.getTracks().length} tracks`);
+            const stream = videoElement.captureStream ? videoElement.captureStream() : videoElement.mozCaptureStream();
+            console.log(`Got stream for ${virtualId}: ${stream.getTracks().length} tracks, muted: ${videoElement.muted}`);
             return stream;
         } catch (error) {
             console.error(`Error getting stream for ${virtualId}:`, error);
