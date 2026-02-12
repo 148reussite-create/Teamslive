@@ -1675,8 +1675,57 @@ async function switchHostVideo(mode) {
         activeBtn.classList.add('active');
     }
 
-    // Get the new video stream based on mode
+    // Get the new video and audio tracks based on mode
     let newVideoTrack = null;
+    let newAudioTrack = null; // Audio from video file (null = keep mic audio)
+
+    // Helper to get tracks from a video element with unmute for audio capture
+    async function getTracksFromVideoElement(videoElement, label) {
+        if (!videoElement) {
+            console.error(`${label} element not found!`);
+            alert(`${label} non chargée. Veuillez patienter ou recharger la page.`);
+            return null;
+        }
+        if (!videoElement.src) {
+            console.error(`${label} has no source!`);
+            alert(`${label} non configurée (pas de source).`);
+            return null;
+        }
+
+        // Wait for video to be ready if not already
+        if (videoElement.readyState < 2) {
+            console.log(`Waiting for ${label} to load metadata...`);
+            await new Promise((resolve, reject) => {
+                const timeout = setTimeout(() => reject(new Error('Video load timeout')), 10000);
+                videoElement.onloadeddata = () => { clearTimeout(timeout); resolve(); };
+                videoElement.onerror = () => { clearTimeout(timeout); reject(new Error('Video load error')); };
+                videoElement.load();
+            });
+        }
+
+        // Unmute so captureStream() gets real audio (works from user gesture / button click)
+        videoElement.muted = false;
+        videoElement.volume = 1.0;
+        try {
+            await videoElement.play();
+            console.log(`${label} playing UNMUTED - audio will be captured`);
+        } catch (e) {
+            console.log(`${label} unmuted play failed, falling back to muted`);
+            videoElement.muted = true;
+            await videoElement.play();
+        }
+
+        const stream = videoElement.captureStream ? videoElement.captureStream() : videoElement.mozCaptureStream();
+        if (!stream) {
+            console.error(`Failed to capture stream from ${label}!`);
+            return null;
+        }
+
+        const videoTracks = stream.getVideoTracks();
+        const audioTracks = stream.getAudioTracks();
+        console.log(`${label} stream: ${videoTracks.length} video, ${audioTracks.length} audio, muted=${videoElement.muted}`);
+        return { videoTrack: videoTracks[0] || null, audioTrack: audioTracks[0] || null };
+    }
 
     if (mode === 'webcam') {
         // Switch back to webcam
@@ -1686,166 +1735,83 @@ async function switchHostVideo(mode) {
                 newVideoTrack = videoTracks[0];
                 console.log('Using webcam track');
             }
+            // Restore microphone audio
+            const audioTracks = localStream.getAudioTracks();
+            if (audioTracks.length > 0) {
+                newAudioTrack = audioTracks[0];
+                console.log('Restoring microphone audio');
+            }
         }
     } else if (mode === 'video1') {
-        // Get video track from video1 element
         const videoElement = isHost ? hostVideo1Element : participantVideo1Element;
-        console.log('Video1 element:', videoElement);
-        console.log('Video1 src:', videoElement ? videoElement.src : 'N/A');
-        console.log('Video1 readyState:', videoElement ? videoElement.readyState : 'N/A');
-
-        if (!videoElement) {
-            console.error('Video 1 element not found! Videos may not be loaded yet.');
-            alert('Vidéo 1 non chargée. Veuillez patienter ou recharger la page.');
-            return;
-        }
-
-        if (!videoElement.src) {
-            console.error('Video 1 has no source!');
-            alert('Vidéo 1 non configurée (pas de source).');
-            return;
-        }
-
         try {
-            // Wait for video to be ready if not already
-            if (videoElement.readyState < 2) {
-                console.log('Waiting for video1 to load metadata...');
-                await new Promise((resolve, reject) => {
-                    const timeout = setTimeout(() => reject(new Error('Video load timeout')), 10000);
-                    videoElement.onloadeddata = () => {
-                        clearTimeout(timeout);
-                        resolve();
-                    };
-                    videoElement.onerror = () => {
-                        clearTimeout(timeout);
-                        reject(new Error('Video load error'));
-                    };
-                    videoElement.load();
-                });
-            }
-
-            console.log('Attempting to play video1...');
-            await videoElement.play();
-            console.log('Video1 playing, getting stream...');
-
-            const stream = videoElement.captureStream ? videoElement.captureStream() : videoElement.mozCaptureStream();
-            console.log('Captured stream:', stream);
-
-            if (stream) {
-                const tracks = stream.getVideoTracks();
-                console.log('Video tracks from stream:', tracks.length);
-                if (tracks.length > 0) {
-                    newVideoTrack = tracks[0];
-                    console.log('Got video track from video1');
-                } else {
-                    console.error('No video tracks in captured stream!');
-                    alert('Erreur: pas de piste vidéo dans le stream capturé.');
-                    return;
-                }
-            } else {
-                console.error('Failed to capture stream from video element!');
-                alert('Erreur: impossible de capturer le stream vidéo.');
-                return;
-            }
+            const tracks = await getTracksFromVideoElement(videoElement, 'Video 1');
+            if (!tracks || !tracks.videoTrack) return;
+            newVideoTrack = tracks.videoTrack;
+            newAudioTrack = tracks.audioTrack; // Audio from video file
         } catch (error) {
             console.error('Error playing video1:', error);
             alert('Erreur lecture vidéo 1: ' + error.message);
             return;
         }
     } else if (mode === 'video2') {
-        // Get video track from video2 element
         const videoElement = isHost ? hostVideo2Element : participantVideo2Element;
-        console.log('Video2 element:', videoElement);
-        console.log('Video2 src:', videoElement ? videoElement.src : 'N/A');
-        console.log('Video2 readyState:', videoElement ? videoElement.readyState : 'N/A');
-
-        if (!videoElement) {
-            console.error('Video 2 element not found! Videos may not be loaded yet.');
-            alert('Vidéo 2 non chargée. Veuillez patienter ou recharger la page.');
-            return;
-        }
-
-        if (!videoElement.src) {
-            console.error('Video 2 has no source!');
-            alert('Vidéo 2 non configurée (pas de source).');
-            return;
-        }
-
         try {
-            // Wait for video to be ready if not already
-            if (videoElement.readyState < 2) {
-                console.log('Waiting for video2 to load metadata...');
-                await new Promise((resolve, reject) => {
-                    const timeout = setTimeout(() => reject(new Error('Video load timeout')), 10000);
-                    videoElement.onloadeddata = () => {
-                        clearTimeout(timeout);
-                        resolve();
-                    };
-                    videoElement.onerror = () => {
-                        clearTimeout(timeout);
-                        reject(new Error('Video load error'));
-                    };
-                    videoElement.load();
-                });
-            }
-
-            console.log('Attempting to play video2...');
-            await videoElement.play();
-            console.log('Video2 playing, getting stream...');
-
-            const stream = videoElement.captureStream ? videoElement.captureStream() : videoElement.mozCaptureStream();
-            console.log('Captured stream:', stream);
-
-            if (stream) {
-                const tracks = stream.getVideoTracks();
-                console.log('Video tracks from stream:', tracks.length);
-                if (tracks.length > 0) {
-                    newVideoTrack = tracks[0];
-                    console.log('Got video track from video2');
-                } else {
-                    console.error('No video tracks in captured stream!');
-                    alert('Erreur: pas de piste vidéo dans le stream capturé.');
-                    return;
-                }
-            } else {
-                console.error('Failed to capture stream from video element!');
-                alert('Erreur: impossible de capturer le stream vidéo.');
-                return;
-            }
+            const tracks = await getTracksFromVideoElement(videoElement, 'Video 2');
+            if (!tracks || !tracks.videoTrack) return;
+            newVideoTrack = tracks.videoTrack;
+            newAudioTrack = tracks.audioTrack; // Audio from video file
         } catch (error) {
             console.error('Error playing video2:', error);
             alert('Erreur lecture vidéo 2: ' + error.message);
             return;
         }
     } else if (mode === 'stop') {
-        // Create a transparent/empty canvas stream to keep connection alive
-        // This prevents the video from freezing on remote peers
         const canvas = document.createElement('canvas');
         canvas.width = 640;
         canvas.height = 480;
         const ctx = canvas.getContext('2d');
-
-        // Fill with transparent/gray color to indicate "no video"
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Create a low FPS stream (just to keep connection alive)
         const emptyStream = canvas.captureStream(1);
         newVideoTrack = emptyStream.getVideoTracks()[0];
         console.log('Created black canvas track for stop mode');
+
+        // Restore microphone audio for stop mode
+        if (localStream) {
+            const audioTracks = localStream.getAudioTracks();
+            if (audioTracks.length > 0) {
+                newAudioTrack = audioTracks[0];
+                console.log('Restoring microphone audio for stop mode');
+            }
+        }
     }
 
-    // Replace video track in all peer connections
+    // Replace video AND audio tracks in all peer connections
     for (const [peerId, peer] of peers.entries()) {
         const senders = peer.getSenders();
-        const videoSender = senders.find(sender => sender.track && sender.track.kind === 'video');
 
-        if (videoSender) {
+        // Replace video track
+        const videoSender = senders.find(sender => sender.track && sender.track.kind === 'video');
+        if (videoSender && newVideoTrack) {
             try {
                 await videoSender.replaceTrack(newVideoTrack);
                 console.log(`✅ Replaced video track for peer ${peerId} with ${mode}`);
             } catch (error) {
-                console.error(`❌ Error replacing track for peer ${peerId}:`, error);
+                console.error(`❌ Error replacing video track for peer ${peerId}:`, error);
+            }
+        }
+
+        // Replace audio track (video file audio or mic audio)
+        if (newAudioTrack) {
+            const audioSender = senders.find(sender => sender.track && sender.track.kind === 'audio');
+            if (audioSender) {
+                try {
+                    await audioSender.replaceTrack(newAudioTrack);
+                    console.log(`✅ Replaced audio track for peer ${peerId} with ${mode} audio`);
+                } catch (error) {
+                    console.error(`❌ Error replacing audio track for peer ${peerId}:`, error);
+                }
             }
         }
     }
