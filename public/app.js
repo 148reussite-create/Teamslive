@@ -3255,3 +3255,38 @@ function switchMyVideo(mode) {
     // Reuse the existing switchHostVideo logic but for participant
     switchHostVideo(mode);
 }
+
+// ============================================
+// DEBUG OVERLAY (temporary - remove after fixing)
+// ============================================
+(function() {
+    const dbg = document.createElement('div');
+    dbg.id = 'debug-overlay';
+    dbg.style.cssText = 'position:fixed;bottom:5px;left:5px;background:rgba(0,0,0,0.85);color:#0f0;font:11px monospace;padding:8px 12px;border-radius:6px;z-index:99999;max-width:350px;pointer-events:none;';
+    document.body.appendChild(dbg);
+
+    function update() {
+        const lines = [];
+        lines.push('v4 | Socket: ' + (socket.connected ? 'OK (' + socket.id + ')' : 'DISCONNECTED'));
+        lines.push('Media: ' + (localStream ? localStream.getTracks().map(t => t.kind + '=' + (t.enabled ? 'on' : 'off')).join(', ') : 'NONE'));
+        lines.push('Screen: ' + currentScreen + ' | Host: ' + isHost);
+
+        const peerList = [];
+        for (const [id, peer] of peers.entries()) {
+            peerList.push(id.substring(0, 6) + ':' + (peer.iceConnectionState || '?'));
+        }
+        lines.push('Peers(' + peers.size + '): ' + (peerList.length ? peerList.join(', ') : 'none'));
+
+        const vpList = [];
+        if (typeof virtualPeers !== 'undefined') {
+            for (const [vid, vp] of virtualPeers.entries()) {
+                vpList.push(vid.substring(0, 8));
+            }
+        }
+        if (vpList.length) lines.push('VPeers: ' + vpList.join(', '));
+
+        dbg.innerHTML = lines.join('<br>');
+        requestAnimationFrame(update);
+    }
+    update();
+})();
