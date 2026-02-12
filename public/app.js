@@ -2718,9 +2718,22 @@ async function getVirtualParticipantStream(virtualId) {
                 });
             }
 
-            await videoElement.play();
+            // Unmute so captureStream() captures real audio (not silence)
+            // This works when called from user gesture (button click)
+            videoElement.muted = false;
+            videoElement.volume = 1.0;
+            try {
+                await videoElement.play();
+                console.log(`Video playing UNMUTED for ${virtualId} - audio will be captured`);
+            } catch (unmutedError) {
+                // No user gesture context - fall back to muted (audio will be silent)
+                console.log(`Unmuted play failed, falling back to muted for ${virtualId}`);
+                videoElement.muted = true;
+                await videoElement.play();
+            }
             const stream = videoElement.captureStream ? videoElement.captureStream() : videoElement.mozCaptureStream();
-            console.log(`Got stream for ${virtualId}: ${stream.getTracks().length} tracks`);
+            const audioTracks = stream.getAudioTracks();
+            console.log(`Got stream for ${virtualId}: ${stream.getTracks().length} tracks (audio: ${audioTracks.length}, muted: ${videoElement.muted})`);
             return stream;
         } catch (error) {
             console.error(`Error getting stream for ${virtualId}:`, error);
@@ -3271,7 +3284,7 @@ function switchMyVideo(mode) {
 
     function update() {
         const lines = [];
-        lines.push('v4 | Socket: ' + (socket.connected ? 'OK (' + socket.id + ')' : 'DISCONNECTED'));
+        lines.push('v7 | Socket: ' + (socket.connected ? 'OK (' + socket.id + ')' : 'DISCONNECTED'));
         lines.push('Media: ' + (localStream ? localStream.getTracks().map(t => t.kind + '=' + (t.enabled ? 'on' : 'off')).join(', ') : 'NONE'));
         lines.push('Screen: ' + currentScreen + ' | Host: ' + isHost);
 
@@ -3284,10 +3297,21 @@ function switchMyVideo(mode) {
         const vpList = [];
         if (typeof virtualPeers !== 'undefined') {
             for (const [vid, vp] of virtualPeers.entries()) {
-                vpList.push(vid.substring(0, 8));
+                let peerStates = [];
+                if (vp.peerConnections) {
+                    for (const [pid, pc] of vp.peerConnections.entries()) {
+                        peerStates.push(pid.substring(0,4) + ':' + (pc.iceConnectionState || '?'));
+                    }
+                }
+                vpList.push(vid.replace('virtual-','') + '(' + peerStates.join(',') + ')');
             }
         }
-        if (vpList.length) lines.push('VPeers: ' + vpList.join(', '));
+        if (vpList.length) lines.push('VPeers: ' + vpList.join(' | '));
+
+        // P2 video info (host only)
+        if (typeof p2Video1Element !== 'undefined' && p2Video1Element) {
+            lines.push('P2vid: mode=' + p2VideoMode + ' muted=' + p2Video1Element.muted + ' vol=' + p2Video1Element.volume.toFixed(1) + ' playing=' + !p2Video1Element.paused);
+        }
 
         dbg.innerHTML = lines.join('<br>');
         requestAnimationFrame(update);
