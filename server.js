@@ -10,8 +10,14 @@ const io = socketIO(server);
 const PORT = process.env.PORT || 3000;
 const MAX_PARTICIPANTS = 5;
 
-// Serve static files
-app.use(express.static('public'));
+// Serve static files with no-cache for JS to prevent stale code
+app.use(express.static('public', {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.js')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+  }
+}));
 
 // Host route - setup page to create participant links
 app.get('/host', (req, res) => {
