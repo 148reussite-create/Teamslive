@@ -2696,10 +2696,29 @@ async function getVirtualParticipantStream(virtualId) {
                 });
             }
 
-            // Unmute before capture - captureStream() captures muted output as silent
-            videoElement.muted = false;
+            // Keep muted for reliable autoplay, capture video stream
+            videoElement.muted = true;
             await videoElement.play();
             const stream = videoElement.captureStream ? videoElement.captureStream() : videoElement.mozCaptureStream();
+
+            // Use Web Audio API to capture audio (bypasses muted state)
+            try {
+                if (!window._virtualAudioCtx) {
+                    window._virtualAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                const audioCtx = window._virtualAudioCtx;
+                const source = audioCtx.createMediaElementSource(videoElement);
+                const dest = audioCtx.createMediaStreamDestination();
+                source.connect(dest);
+                // Don't connect to audioCtx.destination to avoid local playback
+
+                // Remove the muted audio track from captureStream and add the real one
+                stream.getAudioTracks().forEach(t => stream.removeTrack(t));
+                dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+            } catch (audioErr) {
+                console.log('Web Audio capture fallback:', audioErr);
+            }
+
             console.log(`Got stream for ${virtualId}: ${stream.getTracks().length} tracks`);
             return stream;
         } catch (error) {
