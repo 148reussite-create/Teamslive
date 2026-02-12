@@ -778,8 +778,12 @@ function addRemoteVideo(peerId, peerName, peerInitials, stream) {
         video.autoplay = true;
         video.playsInline = true;
         videoContainer.appendChild(video);
-        // Ensure playback starts (some browsers need explicit play)
-        video.play().catch(e => console.log('Remote video play error:', e));
+
+        // Hidden audio element as fallback to ensure audio always plays
+        const audio = document.createElement('audio');
+        audio.srcObject = stream;
+        audio.autoplay = true;
+        videoContainer.appendChild(audio);
     } else {
         // Show avatar with initials
         const avatar = document.createElement('div');
@@ -795,6 +799,14 @@ function addRemoteVideo(peerId, peerName, peerInitials, stream) {
     videoContainer.appendChild(nameTag);
 
     videoGrid.appendChild(videoContainer);
+
+    // Play after DOM insertion for reliability
+    if (stream) {
+        const video = videoContainer.querySelector('video');
+        const audio = videoContainer.querySelector('audio');
+        if (video) video.play().catch(e => console.log('Remote video play error:', e));
+        if (audio) audio.play().catch(e => console.log('Remote audio play error:', e));
+    }
 }
 
 function removeVideo(peerId) {
@@ -811,16 +823,29 @@ function updateVideoDisplay(peerId, hasVideo) {
     const participant = participants.get(peerId);
     if (!participant) return;
 
-    // Clear existing content except name tag
+    // Clear existing content except name tag and audio element
     const nameTag = videoContainer.querySelector('.video-name-tag');
+    const existingAudio = videoContainer.querySelector('audio');
     videoContainer.innerHTML = '';
 
+    // Always keep audio element for continuous audio playback
+    const stream = remoteStreams.get(peerId);
+    if (stream) {
+        const audio = existingAudio || document.createElement('audio');
+        if (!existingAudio) {
+            audio.srcObject = stream;
+            audio.autoplay = true;
+        }
+        videoContainer.appendChild(audio);
+    }
+
     // If hasVideo is false, ALWAYS show avatar regardless of stream
-    if (hasVideo && remoteStreams.has(peerId)) {
+    if (hasVideo && stream) {
         const video = document.createElement('video');
-        video.srcObject = remoteStreams.get(peerId);
+        video.srcObject = stream;
         video.autoplay = true;
         video.playsInline = true;
+        video.muted = true; // Audio handled by separate audio element
         videoContainer.appendChild(video);
     } else {
         // Show avatar when camera is off OR in stop mode
@@ -1029,7 +1054,7 @@ function setupSocketEvents() {
 
     socket.on('waiting-for-admission', () => {
         // Participant is waiting for host to admit
-        waitingMessage.textContent = 'Waiting for host to let you in...';
+        if (waitingMessage) waitingMessage.textContent = 'Waiting for host to let you in...';
     });
 
     socket.on('participant-waiting', (data) => {
@@ -2856,22 +2881,30 @@ function setupVirtualParticipantSocketEvents() {
 
         console.log(`Received virtual offer for ${data.virtualId}`);
 
-        const peer = new RTCPeerConnection(ICE_SERVERS);
+        try {
+            const peer = new RTCPeerConnection(ICE_SERVERS);
 
-        // Store the peer connection
-        if (!virtualStreams.has(data.virtualId)) {
+            // Store the peer connection
             virtualStreams.set(data.virtualId + '-peer', peer);
-        }
 
-        // Handle incoming stream
-        peer.ontrack = (event) => {
-            console.log(`Received track from ${data.virtualId}:`, event.track.kind);
-            const [stream] = event.streams;
-            virtualStreams.set(data.virtualId, stream);
+            // Handle incoming stream
+            peer.ontrack = (event) => {
+                console.log(`Received track from ${data.virtualId}:`, event.track.kind);
+                const [stream] = event.streams;
+                virtualStreams.set(data.virtualId, stream);
 
-            // Update display
-            const container = document.getElementById(`video-${data.virtualId}`);
-            if (container) {
+                // Update display - find or create container
+                let container = document.getElementById(`video-${data.virtualId}`);
+
+                if (!container) {
+                    // Container doesn't exist yet - create it
+                    console.log(`Creating container for ${data.virtualId} from ontrack`);
+                    container = document.createElement('div');
+                    container.className = 'video-container';
+                    container.id = `video-${data.virtualId}`;
+                    if (videoGrid) videoGrid.appendChild(container);
+                }
+
                 // If video element already exists with stream, skip recreation
                 const existingVideo = container.querySelector('video');
                 if (existingVideo && existingVideo.srcObject) {
@@ -2886,32 +2919,45 @@ function setupVirtualParticipantSocketEvents() {
                 video.autoplay = true;
                 video.playsInline = true;
                 container.appendChild(video);
-                video.play().catch(e => console.log('Virtual video play error:', e));
 
                 if (nameTag) container.appendChild(nameTag);
-            }
-        };
 
-        // Handle ICE candidates
-        peer.onicecandidate = (event) => {
-            if (event.candidate) {
-                socket.emit('virtual-ice-candidate', {
-                    virtualId: data.virtualId,
-                    toHost: true,
-                    candidate: event.candidate
-                });
-            }
-        };
+                // Play after DOM insertion
+                video.play().catch(e => console.log('Virtual video play error:', e));
 
-        // Set remote description and create answer
-        await peer.setRemoteDescription(new RTCSessionDescription(data.offer));
-        const answer = await peer.createAnswer();
-        await peer.setLocalDescription(answer);
+                // Also create a hidden audio element as fallback for audio playback
+                const audio = document.createElement('audio');
+                audio.srcObject = stream;
+                audio.autoplay = true;
+                container.appendChild(audio);
+                audio.play().catch(e => console.log('Virtual audio play error:', e));
+            };
 
-        socket.emit('virtual-answer', {
-            virtualId: data.virtualId,
-            answer: answer
-        });
+            // Handle ICE candidates
+            peer.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.emit('virtual-ice-candidate', {
+                        virtualId: data.virtualId,
+                        toHost: true,
+                        candidate: event.candidate
+                    });
+                }
+            };
+
+            // Set remote description and create answer
+            await peer.setRemoteDescription(new RTCSessionDescription(data.offer));
+            const answer = await peer.createAnswer();
+            await peer.setLocalDescription(answer);
+
+            socket.emit('virtual-answer', {
+                virtualId: data.virtualId,
+                answer: answer
+            });
+
+            console.log(`Virtual peer ${data.virtualId} answer sent successfully`);
+        } catch (error) {
+            console.error(`Error handling virtual offer for ${data.virtualId}:`, error);
+        }
     });
 
     // For host: receive virtual answer
