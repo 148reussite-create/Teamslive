@@ -10,12 +10,12 @@ const io = socketIO(server);
 const PORT = process.env.PORT || 3000;
 const MAX_PARTICIPANTS = 5;
 
-// Serve static files with no-cache for JS to prevent stale code
+// Serve static files with no-cache on ALL files to prevent stale code
 app.use(express.static('public', {
-  setHeaders: (res, path) => {
-    if (path.endsWith('.js')) {
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    }
+  setHeaders: (res, filePath) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
   }
 }));
 
@@ -64,6 +64,56 @@ app.get('/dl/launcher/launcher.html', (req, res) => {
     console.log('Invalid joinToken, redirecting to participant');
     res.redirect('/participant');
   }
+});
+
+// ============================================
+// TURN SERVER CONFIG - Metered.ca (free 50GB/month)
+// ============================================
+// To set up:
+// 1. Go to https://www.metered.ca/ and create a free account
+// 2. Create an app (any name)
+// 3. Copy your API key and app name
+// 4. Set them below or via environment variables
+const METERED_APP_NAME = process.env.METERED_APP || 'reference-app';
+const METERED_API_KEY = process.env.METERED_KEY || '77bb49fa0a362c56cfa9bf108455d30b50b2';
+
+// API endpoint to get TURN credentials
+app.get('/api/ice-servers', async (req, res) => {
+  // Try Metered.ca TURN servers
+  if (METERED_API_KEY !== 'YOUR_API_KEY' && METERED_APP_NAME !== 'YOUR_APP_NAME') {
+    try {
+      const response = await fetch(
+        `https://${METERED_APP_NAME}.metered.live/api/v1/turn/credentials?apiKey=${METERED_API_KEY}`
+      );
+      if (response.ok) {
+        const turnServers = await response.json();
+        console.log('TURN credentials fetched from Metered.ca');
+        res.json({
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            ...turnServers
+          ]
+        });
+        return;
+      }
+    } catch (e) {
+      console.log('Metered API error:', e.message);
+    }
+  }
+
+  // Fallback: STUN only (works on same network, may fail across different networks)
+  console.log('WARNING: No TURN server configured! WebRTC may fail between different networks.');
+  console.log('Set up free TURN at https://www.metered.ca/');
+  res.json({
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:stun3.l.google.com:19302' },
+      { urls: 'stun:stun4.l.google.com:19302' }
+    ]
+  });
 });
 
 // Default route redirects to participant
@@ -452,4 +502,5 @@ io.on('connection', (socket) => {
 server.listen(PORT, () => {
   console.log(`Server started on http://localhost:${PORT}`);
   console.log(`Maximum ${MAX_PARTICIPANTS} participants allowed`);
+  console.log(`\nPour accès externe, lance: cloudflared tunnel --url http://localhost:${PORT}`);
 });

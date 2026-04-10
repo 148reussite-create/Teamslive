@@ -1,31 +1,67 @@
 // Teams Clone - Complete Flow v4
-const socket = io();
+const socket = io({
+    transports: ['polling', 'websocket'],
+    upgrade: true
+});
 
-// WebRTC Configuration - multiple STUN + free TURN for reliability
-const ICE_SERVERS = {
+// DEBUG: temporary on-screen debug log (remove after fixing)
+const _debugLog = [];
+function debugShow(msg) {
+    console.log('[DEBUG]', msg);
+    _debugLog.push(new Date().toLocaleTimeString() + ' ' + msg);
+    let el = document.getElementById('_debug_overlay');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = '_debug_overlay';
+        el.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,0.85);color:#0f0;font:11px monospace;padding:8px;max-height:200px;overflow-y:auto;z-index:99999;pointer-events:none;';
+        document.body.appendChild(el);
+    }
+    el.innerHTML = _debugLog.slice(-15).join('<br>');
+    el.scrollTop = el.scrollHeight;
+}
+
+// WebRTC Configuration - loaded dynamically from server (local TURN)
+let ICE_SERVERS = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' },
-        { urls: 'stun:stun3.l.google.com:19302' },
-        { urls: 'stun:stun4.l.google.com:19302' },
-        {
-            urls: 'turn:openrelay.metered.ca:80',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-        },
-        {
-            urls: 'turn:openrelay.metered.ca:443',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-        },
-        {
-            urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-        }
+        { urls: 'stun:stun1.l.google.com:19302' }
     ]
 };
+
+// Fetch ICE servers config from our server (includes TURN)
+let iceServersReady = false;
+async function loadIceServers() {
+    try {
+        const res = await fetch('/api/ice-servers');
+        const config = await res.json();
+        ICE_SERVERS = config;
+        iceServersReady = true;
+        const turnCount = ICE_SERVERS.iceServers.filter(s => {
+            const urls = s.urls || s.url || '';
+            return (Array.isArray(urls) ? urls.join(',') : urls).includes('turn:');
+        }).length;
+        debugShow('ICE servers loaded: ' + ICE_SERVERS.iceServers.length + ' servers (TURN: ' + turnCount + ')');
+        if (turnCount === 0) {
+            debugShow('WARNING: No TURN servers! Video may fail between different networks.');
+        }
+        console.log('ICE servers loaded:', JSON.stringify(ICE_SERVERS.iceServers.map(s => s.urls || s.url)));
+    } catch (e) {
+        console.warn('Could not load ICE servers from server, using defaults:', e);
+        iceServersReady = true;
+    }
+}
+// Load immediately
+const iceServersPromise = loadIceServers();
+
+// Ensure ICE servers are loaded before creating any peer connection
+async function ensureIceServers() {
+    if (!iceServersReady) {
+        await iceServersPromise;
+    }
+}
+
+socket.on('connect', () => debugShow('Socket connected: ' + socket.id));
+socket.on('connect_error', (e) => debugShow('Socket ERROR: ' + e.message));
 
 // Fix for Firefox and other browsers
 const RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
@@ -86,6 +122,7 @@ let participantVideo2Element = null;
 const peers = new Map();
 const remoteStreams = new Map();
 const participants = new Map(); // Store participant info
+const pendingIceCandidates = new Map(); // Buffer ICE candidates until remote description is set
 
 // Flag to prevent Sarah's message from being added multiple times
 let sarahMessageAdded = false;
@@ -311,25 +348,30 @@ async function showSetupScreen() {
     updateMeetingDateTime();
 
     // Try to get user media (video + audio, fallback to audio-only)
+    debugShow('Requesting camera+audio...');
     try {
         localStream = await navigator.mediaDevices.getUserMedia({
             video: true,
             audio: true
         });
 
+        debugShow('Camera+Audio OK: ' + localStream.getTracks().map(t => t.kind).join(', '));
         setupVideo.srcObject = localStream;
         setupVideoOff.style.display = 'none';
         isCameraOn = true;
         updateSetupCameraButton();
     } catch (error) {
+        debugShow('Camera FAILED: ' + error.message);
         console.log('Camera+Audio failed, trying audio-only:', error);
         isCameraOn = false;
         setupVideoOff.style.display = 'flex';
         updateSetupCameraButton();
         try {
             localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            debugShow('Audio-only OK');
             console.log('Audio-only stream captured successfully');
         } catch (audioError) {
+            debugShow('ALL MEDIA FAILED: ' + audioError.message);
             console.log('No media available at all:', audioError);
         }
     }
@@ -560,6 +602,7 @@ function enterMeeting() {
         }, 100);
     } else {
         // Participants just send entered-meeting immediately
+        debugShow('ENTERING MEETING as participant');
         socket.emit('entered-meeting');
     }
 }
@@ -688,6 +731,15 @@ function addLocalVideo() {
     const existingLocal = document.getElementById(`video-${socket.id}`);
     if (existingLocal) {
         console.log('Removing existing local video');
+        // Stop any cloned video/audio elements before removing from DOM
+        existingLocal.querySelectorAll('video, audio').forEach(el => {
+            if (el.srcObject !== localStream) { // Don't kill the webcam stream
+                el.pause();
+                el.srcObject = null;
+                el.removeAttribute('src');
+                el.load();
+            }
+        });
         existingLocal.remove();
     }
 
@@ -1117,6 +1169,7 @@ function setupSocketEvents() {
     });
 
     socket.on('admitted', () => {
+        debugShow('ADMITTED - entering meeting');
         // Participant has been admitted
         enterMeeting();
     });
@@ -1132,7 +1185,7 @@ function setupSocketEvents() {
     });
 
     socket.on('existing-participants', (existingParticipants) => {
-        // When entering meeting, get list of existing participants
+        debugShow('EXISTING PARTICIPANTS: ' + existingParticipants.length + ' -> ' + existingParticipants.map(p => p.name).join(', '));
         console.log('Existing participants:', existingParticipants);
 
         existingParticipants.forEach(participant => {
@@ -1152,6 +1205,7 @@ function setupSocketEvents() {
     });
 
     socket.on('user-joined', (data) => {
+        debugShow('USER JOINED: ' + data.name + ' (id: ' + data.id.slice(0,6) + ')');
         console.log('User joined:', data);
         participants.set(data.id, data);
 
@@ -1214,6 +1268,7 @@ function setupSocketEvents() {
         }
 
         remoteStreams.delete(data.id);
+        pendingIceCandidates.delete(data.id);
     });
 
     socket.on('chat-message', (data) => {
@@ -1276,42 +1331,67 @@ function setupSocketEvents() {
 
     // WebRTC signaling
     socket.on('offer', async (data) => {
-        console.log('📥 Received offer from:', data.from);
-
-        // Check if peer connection already exists
-        let peer = peers.get(data.from);
-        if (!peer) {
-            console.log('   No existing peer - creating new peer connection to respond to offer');
-            peer = await createPeerConnection(data.from, false);
-        } else {
-            console.log('   Peer already exists - using existing connection');
+        debugShow('OFFER received from ' + data.from.slice(0,6));
+        try {
+            let peer = peers.get(data.from);
+            if (!peer) {
+                debugShow('Creating peer for ' + data.from.slice(0,6) + '...');
+                peer = await createPeerConnection(data.from, false);
+            }
+            if (!peer) {
+                debugShow('ERROR: peer creation returned null!');
+                return;
+            }
+            debugShow('Setting remote desc...');
+            await peer.setRemoteDescription(new RTCSessionDescription(data.offer));
+            // Flush any buffered ICE candidates now that remote description is set
+            await flushIceCandidates(data.from, peer);
+            debugShow('Creating answer...');
+            const answer = await peer.createAnswer();
+            await peer.setLocalDescription(answer);
+            debugShow('ANSWER sent to ' + data.from.slice(0,6));
+            socket.emit('answer', { to: data.from, answer });
+        } catch (err) {
+            debugShow('OFFER ERROR: ' + err.message);
+            console.error('Offer handling error:', err);
         }
-
-        console.log('   Setting remote description (offer)');
-        await peer.setRemoteDescription(new RTCSessionDescription(data.offer));
-        console.log('   Creating answer');
-        const answer = await peer.createAnswer();
-        console.log('   Setting local description (answer)');
-        await peer.setLocalDescription(answer);
-        console.log('📤 Sending answer to:', data.from);
-        socket.emit('answer', { to: data.from, answer });
     });
 
     socket.on('answer', async (data) => {
-        console.log('📥 Received answer from:', data.from);
-        const peer = peers.get(data.from);
-        if (peer) {
-            await peer.setRemoteDescription(new RTCSessionDescription(data.answer));
-            console.log('✅ Answer processed for peer:', data.from);
-        } else {
-            console.error('❌ No peer connection found for answer from:', data.from);
+        debugShow('ANSWER received from ' + data.from.slice(0,6));
+        try {
+            const peer = peers.get(data.from);
+            if (peer) {
+                await peer.setRemoteDescription(new RTCSessionDescription(data.answer));
+                // Flush any buffered ICE candidates now that remote description is set
+                await flushIceCandidates(data.from, peer);
+                debugShow('Answer processed OK for ' + data.from.slice(0,6));
+            } else {
+                debugShow('ERROR: no peer for answer from ' + data.from.slice(0,6));
+            }
+        } catch (err) {
+            debugShow('ANSWER ERROR: ' + err.message);
+            console.error('Answer handling error:', err);
         }
     });
 
     socket.on('ice-candidate', async (data) => {
+        if (!data.candidate) return;
         const peer = peers.get(data.from);
-        if (peer && data.candidate) {
-            await peer.addIceCandidate(new RTCIceCandidate(data.candidate));
+        if (peer && peer.remoteDescription && peer.remoteDescription.type) {
+            // Remote description is set, we can add the candidate directly
+            try {
+                await peer.addIceCandidate(new RTCIceCandidate(data.candidate));
+            } catch (err) {
+                console.warn('Error adding ICE candidate for', data.from, err.message);
+            }
+        } else {
+            // Buffer the candidate until remote description is set
+            debugShow('Buffering ICE candidate from ' + data.from.slice(0,6));
+            if (!pendingIceCandidates.has(data.from)) {
+                pendingIceCandidates.set(data.from, []);
+            }
+            pendingIceCandidates.get(data.from).push(data.candidate);
         }
     });
 }
@@ -1320,20 +1400,36 @@ function setupSocketEvents() {
 // WEBRTC FUNCTIONS
 // ============================================
 
-async function createPeerConnection(peerId, isInitiator) {
-    console.log(`🔵 Creating peer connection with ${peerId}, isInitiator: ${isInitiator}`);
-    console.log(`   localStream exists: ${!!localStream}, tracks:`, localStream ? localStream.getTracks().length : 0);
+// Flush buffered ICE candidates for a peer after remote description is set
+async function flushIceCandidates(peerId, peer) {
+    const candidates = pendingIceCandidates.get(peerId);
+    if (candidates && candidates.length > 0) {
+        debugShow('Flushing ' + candidates.length + ' buffered ICE candidates for ' + peerId.slice(0,6));
+        for (const candidate of candidates) {
+            try {
+                await peer.addIceCandidate(new RTCIceCandidate(candidate));
+            } catch (err) {
+                console.warn('Error adding buffered ICE candidate:', err.message);
+            }
+        }
+        pendingIceCandidates.delete(peerId);
+    }
+}
 
-    // Check if RTCPeerConnection is supported
+async function createPeerConnection(peerId, isInitiator) {
+    debugShow('createPeer(' + peerId.slice(0,6) + ', init=' + isInitiator + ') localStream=' + (localStream ? localStream.getTracks().length + ' tracks' : 'NULL'));
+
     if (typeof RTCPeerConnection === 'undefined') {
-        console.error('❌ RTCPeerConnection is not supported in this browser!');
-        console.error('Please use Chrome, Firefox, or Edge, and access via http://localhost:3000');
-        alert('WebRTC is not supported in this browser. Please use Chrome, Firefox, or Edge.');
+        debugShow('ERROR: RTCPeerConnection undefined!');
         return null;
     }
 
+    await ensureIceServers();
+    debugShow('ICE ready, creating RTCPeerConnection...');
+
     const peer = new RTCPeerConnection(ICE_SERVERS);
     peers.set(peerId, peer);
+    debugShow('RTCPeerConnection created OK');
 
     // Add local stream
     if (localStream) {
@@ -1353,6 +1449,7 @@ async function createPeerConnection(peerId, isInitiator) {
 
     // Handle remote stream
     peer.ontrack = (event) => {
+        debugShow('GOT TRACK from ' + peerId + ': ' + event.track.kind);
         console.log('Received track from', peerId, 'kind:', event.track.kind);
         const [stream] = event.streams;
         remoteStreams.set(peerId, stream);
@@ -1380,18 +1477,22 @@ async function createPeerConnection(peerId, isInitiator) {
         }
     };
 
-    // Monitor connection state
+    // Monitor connection state with auto-retry
     peer.onconnectionstatechange = () => {
-        // Only log important state changes
-        if (peer.connectionState === 'connected' || peer.connectionState === 'failed' || peer.connectionState === 'disconnected') {
-            console.log(`Peer ${peerId} connection state:`, peer.connectionState);
+        debugShow('PEER ' + peerId.slice(0,6) + ' state: ' + peer.connectionState);
+        console.log(`Peer ${peerId} connection state:`, peer.connectionState);
+        if (peer.connectionState === 'failed') {
+            console.log(`Connection FAILED with ${peerId} - retrying with ICE restart...`);
+            retryPeerConnection(peerId);
         }
     };
 
     peer.oniceconnectionstatechange = () => {
-        // Only log important state changes
-        if (peer.iceConnectionState === 'connected' || peer.iceConnectionState === 'failed' || peer.iceConnectionState === 'disconnected') {
-            console.log(`Peer ${peerId} ICE connection state:`, peer.iceConnectionState);
+        debugShow('PEER ' + peerId.slice(0,6) + ' ICE: ' + peer.iceConnectionState);
+        console.log(`Peer ${peerId} ICE state:`, peer.iceConnectionState);
+        if (peer.iceConnectionState === 'failed') {
+            console.log(`ICE FAILED with ${peerId} - retrying...`);
+            retryPeerConnection(peerId);
         }
     };
 
@@ -1407,6 +1508,28 @@ async function createPeerConnection(peerId, isInitiator) {
     }
 
     return peer;
+}
+
+// Retry failed peer connection
+async function retryPeerConnection(peerId) {
+    const oldPeer = peers.get(peerId);
+    if (oldPeer) {
+        oldPeer.close();
+        peers.delete(peerId);
+    }
+    pendingIceCandidates.delete(peerId);
+
+    // Wait a bit then retry
+    await new Promise(r => setTimeout(r, 1000));
+
+    const participant = participants.get(peerId);
+    if (participant) {
+        console.log(`Retrying connection with ${peerId}...`);
+        const newPeer = await createPeerConnection(peerId, true);
+        if (newPeer) {
+            console.log(`Retry offer sent to ${peerId}`);
+        }
+    }
 }
 
 // ============================================
@@ -1792,6 +1915,12 @@ async function switchHostVideo(mode) {
         }
     }
 
+    // Mute/pause video elements that are no longer active to stop residual audio
+    const vid1 = isHost ? hostVideo1Element : participantVideo1Element;
+    const vid2 = isHost ? hostVideo2Element : participantVideo2Element;
+    if (vid1 && mode !== 'video1') { vid1.muted = true; vid1.pause(); }
+    if (vid2 && mode !== 'video2') { vid2.muted = true; vid2.pause(); }
+
     // Replace video AND audio tracks in all peer connections
     for (const [peerId, peer] of peers.entries()) {
         const senders = peer.getSenders();
@@ -1991,6 +2120,13 @@ function refreshSlot2Display() {
     // Remove existing Slot 2 element
     const existingSlot2 = document.getElementById('video-sarah');
     if (existingSlot2) {
+        // Stop any cloned video/audio elements before removing from DOM
+        existingSlot2.querySelectorAll('video, audio').forEach(el => {
+            el.pause();
+            el.srcObject = null;
+            el.removeAttribute('src');
+            el.load();
+        });
         existingSlot2.remove();
     }
 
@@ -2610,6 +2746,9 @@ async function createVirtualPeerConnection(virtualId, participantId) {
         return null;
     }
 
+    // Ensure TURN servers are loaded before creating peer
+    await ensureIceServers();
+
     const peer = new RTCPeerConnection(ICE_SERVERS);
     virtualPeer.peerConnections.set(participantId, peer);
 
@@ -2826,6 +2965,14 @@ async function switchP2Video(mode) {
 function refreshP2Display() {
     const existingP2 = document.getElementById('video-virtual-p2');
     if (existingP2) {
+        // Stop any cloned video/audio elements before removing from DOM
+        // (cloneNode creates independent elements that keep playing in memory)
+        existingP2.querySelectorAll('video, audio').forEach(el => {
+            el.pause();
+            el.srcObject = null;
+            el.removeAttribute('src');
+            el.load();
+        });
         existingP2.remove();
     }
 
@@ -2837,9 +2984,17 @@ function refreshP2Display() {
 
 // Add virtual participant display to video grid
 function addVirtualParticipantDisplay(virtualId, name, initials, videoMode) {
-    // Remove existing if present
+    // Remove existing if present, stopping any playing media first
     const existing = document.getElementById(`video-${virtualId}`);
-    if (existing) existing.remove();
+    if (existing) {
+        existing.querySelectorAll('video, audio').forEach(el => {
+            el.pause();
+            el.srcObject = null;
+            el.removeAttribute('src');
+            el.load();
+        });
+        existing.remove();
+    }
 
     const videoContainer = document.createElement('div');
     videoContainer.className = 'video-container';
@@ -2924,6 +3079,9 @@ function setupVirtualParticipantSocketEvents() {
         console.log(`Received virtual offer for ${data.virtualId}`);
 
         try {
+            // Ensure TURN servers are loaded
+            await ensureIceServers();
+
             const peer = new RTCPeerConnection(ICE_SERVERS);
 
             // Store the peer connection
@@ -2988,6 +3146,15 @@ function setupVirtualParticipantSocketEvents() {
 
             // Set remote description and create answer
             await peer.setRemoteDescription(new RTCSessionDescription(data.offer));
+            // Flush any buffered ICE candidates for this virtual peer
+            const vKey = 'v-' + data.virtualId;
+            const vCandidates = pendingIceCandidates.get(vKey);
+            if (vCandidates && vCandidates.length > 0) {
+                for (const c of vCandidates) {
+                    try { await peer.addIceCandidate(new RTCIceCandidate(c)); } catch (e) { /* skip */ }
+                }
+                pendingIceCandidates.delete(vKey);
+            }
             const answer = await peer.createAnswer();
             await peer.setLocalDescription(answer);
 
@@ -3013,6 +3180,15 @@ function setupVirtualParticipantSocketEvents() {
             const peer = virtualPeer.peerConnections.get(data.from);
             if (peer) {
                 await peer.setRemoteDescription(new RTCSessionDescription(data.answer));
+                // Flush buffered ICE candidates for this virtual peer connection
+                const vhKey = data.virtualId + '-' + data.from;
+                const vhCandidates = pendingIceCandidates.get(vhKey);
+                if (vhCandidates && vhCandidates.length > 0) {
+                    for (const c of vhCandidates) {
+                        try { await peer.addIceCandidate(new RTCIceCandidate(c)); } catch (e) { /* skip */ }
+                    }
+                    pendingIceCandidates.delete(vhKey);
+                }
                 console.log(`Virtual peer ${data.virtualId} -> ${data.from} connected`);
             }
         }
@@ -3020,20 +3196,35 @@ function setupVirtualParticipantSocketEvents() {
 
     // Handle ICE candidates for virtual peers
     socket.on('virtual-ice-candidate', async (data) => {
+        if (!data.candidate) return;
         if (isHost) {
             // Host receives ICE from participant
             const virtualPeer = virtualPeers.get(data.virtualId);
             if (virtualPeer) {
                 const peer = virtualPeer.peerConnections.get(data.from);
-                if (peer && data.candidate) {
-                    await peer.addIceCandidate(new RTCIceCandidate(data.candidate));
+                if (peer) {
+                    if (peer.remoteDescription && peer.remoteDescription.type) {
+                        try { await peer.addIceCandidate(new RTCIceCandidate(data.candidate)); }
+                        catch (e) { console.warn('Virtual ICE error (host):', e.message); }
+                    } else {
+                        const key = data.virtualId + '-' + data.from;
+                        if (!pendingIceCandidates.has(key)) pendingIceCandidates.set(key, []);
+                        pendingIceCandidates.get(key).push(data.candidate);
+                    }
                 }
             }
         } else {
             // Participant receives ICE from host
             const peer = virtualStreams.get(data.virtualId + '-peer');
-            if (peer && data.candidate) {
-                await peer.addIceCandidate(new RTCIceCandidate(data.candidate));
+            if (peer) {
+                if (peer.remoteDescription && peer.remoteDescription.type) {
+                    try { await peer.addIceCandidate(new RTCIceCandidate(data.candidate)); }
+                    catch (e) { console.warn('Virtual ICE error (participant):', e.message); }
+                } else {
+                    const key = 'v-' + data.virtualId;
+                    if (!pendingIceCandidates.has(key)) pendingIceCandidates.set(key, []);
+                    pendingIceCandidates.get(key).push(data.candidate);
+                }
             }
         }
     });
