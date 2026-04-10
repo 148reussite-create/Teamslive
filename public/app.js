@@ -350,6 +350,7 @@ async function showSetupScreen() {
         setupVideoOff.style.display = 'none';
         isCameraOn = true;
         updateSetupCameraButton();
+        if (typeof populateDeviceSelectors === 'function') populateDeviceSelectors();
     } catch (error) {
         debugShow('Camera FAILED: ' + error.message);
         console.log('Camera+Audio failed, trying audio-only:', error);
@@ -360,6 +361,7 @@ async function showSetupScreen() {
             localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
             debugShow('Audio-only OK');
             console.log('Audio-only stream captured successfully');
+            if (typeof populateDeviceSelectors === 'function') populateDeviceSelectors();
         } catch (audioError) {
             debugShow('ALL MEDIA FAILED: ' + audioError.message);
             console.log('No media available at all:', audioError);
