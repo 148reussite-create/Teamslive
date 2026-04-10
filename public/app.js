@@ -4,20 +4,9 @@ const socket = io({
     upgrade: true
 });
 
-// DEBUG: temporary on-screen debug log (remove after fixing)
-const _debugLog = [];
+// Debug logging (console only, no on-screen overlay)
 function debugShow(msg) {
     console.log('[DEBUG]', msg);
-    _debugLog.push(new Date().toLocaleTimeString() + ' ' + msg);
-    let el = document.getElementById('_debug_overlay');
-    if (!el) {
-        el = document.createElement('div');
-        el.id = '_debug_overlay';
-        el.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,0.85);color:#0f0;font:11px monospace;padding:8px;max-height:200px;overflow-y:auto;z-index:99999;pointer-events:none;';
-        document.body.appendChild(el);
-    }
-    el.innerHTML = _debugLog.slice(-15).join('<br>');
-    el.scrollTop = el.scrollHeight;
 }
 
 // WebRTC Configuration - loaded dynamically from server (local TURN)
