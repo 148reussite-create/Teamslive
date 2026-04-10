@@ -456,6 +456,13 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('virtual-video-update', data);
   });
 
+  // Host leaves → kick everyone
+  socket.on('host-leave', () => {
+    if (socket.id !== hostId) return;
+    console.log('Host is leaving - disconnecting all participants');
+    socket.broadcast.emit('force-redirect');
+  });
+
   // Disconnect
   socket.on('disconnect', () => {
     const participant = participants.get(socket.id) || waitingParticipants.get(socket.id);

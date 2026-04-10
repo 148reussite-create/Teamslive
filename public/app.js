@@ -2460,6 +2460,11 @@ function leaveMeeting() {
         timerInterval = null;
     }
 
+    // If host leaves, kick everyone first
+    if (isHost && socket && socket.connected) {
+        socket.emit('host-leave');
+    }
+
     // Disconnect socket
     if (socket && socket.connected) {
         socket.disconnect();
