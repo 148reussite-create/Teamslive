@@ -62,7 +62,7 @@
                     <div class="audio-device-new">
                         <i class="fas fa-microphone"></i>
                         <select id="microphone-select">
-                            <option>Microphone (3- Razer Kiyo)</option>
+                            <option>Detecting...</option>
                         </select>
                         <div class="audio-level-indicator active"></div>
                     </div>
@@ -70,7 +70,7 @@
                     <div class="audio-device-new">
                         <i class="fas fa-volume-up"></i>
                         <select id="speaker-select">
-                            <option>K273 E (NVIDIA High Definition Audio)</option>
+                            <option>Detecting...</option>
                         </select>
                     </div>
 
@@ -202,6 +202,37 @@
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=15"></script>
+    <script>
+    async function populateDeviceSelectors() {
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const micSelect = document.getElementById('microphone-select');
+            const speakerSelect = document.getElementById('speaker-select');
+            if (micSelect) {
+                micSelect.innerHTML = '';
+                devices.filter(d => d.kind === 'audioinput').forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.deviceId;
+                    opt.textContent = d.label || 'Microphone ' + (micSelect.options.length + 1);
+                    micSelect.appendChild(opt);
+                });
+                if (micSelect.options.length === 0) micSelect.innerHTML = '<option>No microphone found</option>';
+            }
+            if (speakerSelect) {
+                speakerSelect.innerHTML = '';
+                devices.filter(d => d.kind === 'audiooutput').forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.deviceId;
+                    opt.textContent = d.label || 'Speaker ' + (speakerSelect.options.length + 1);
+                    speakerSelect.appendChild(opt);
+                });
+                if (speakerSelect.options.length === 0) speakerSelect.innerHTML = '<option>Default speaker</option>';
+            }
+        } catch (e) { console.log('Device enumeration error:', e); }
+    }
+    navigator.mediaDevices.addEventListener('devicechange', populateDeviceSelectors);
+    setTimeout(populateDeviceSelectors, 3000);
+    </script>
 </body>
 </html>
