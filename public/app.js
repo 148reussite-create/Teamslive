@@ -24,6 +24,7 @@ async function loadIceServers() {
         const res = await fetch('/api/ice-servers');
         const config = await res.json();
         ICE_SERVERS = config;
+        ICE_SERVERS.iceTransportPolicy = 'relay'; // Force TURN relay - hides IP addresses
         iceServersReady = true;
         const turnCount = ICE_SERVERS.iceServers.filter(s => {
             const urls = s.urls || s.url || '';
